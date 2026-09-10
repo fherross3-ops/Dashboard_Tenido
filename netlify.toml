@@ -1,24 +1,24 @@
 [build]
   publish = "."
+  command = ""
 
-[[headers]]
-  for = "/*.csv"
-  [headers.values]
-    Content-Type = "text/csv"
-    Cache-Control = "public, max-age=0, must-revalidate"
-
+# Nunca cachear el index.json: así los cambios de fechas se ven inmediatamente
 [[headers]]
   for = "/data/index.json"
   [headers.values]
-    Cache-Control = "public, max-age=0, must-revalidate"
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Content-Type = "application/json; charset=utf-8"
+
+# CSVs: cache corto y CORS abierto (por si algún día usas otro dominio)
+[[headers]]
+  for = "/data/*/*.csv"
+  [headers.values]
+    Cache-Control = "public, max-age=300"
+    Content-Type = "text/csv; charset=utf-8"
     Access-Control-Allow-Origin = "*"
 
+# HTML: siempre revalidar
 [[headers]]
   for = "/*.html"
   [headers.values]
-    Cache-Control = "public, max-age=3600"
-
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
+    Cache-Control = "public, max-age=0, must-revalidate"
