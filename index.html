@@ -3,883 +3,376 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard · Tenido Tren 02</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<title>Dashboard · Tenido</title>
 <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
     body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #0a0e17; color: #e0e6ed;
-        height: 100vh; overflow: hidden;
-        display: flex; flex-direction: column;
-        padding: 8px 12px;
+        background:#0a0e17; color:#e0e6ed; min-height:100vh;
+        display:flex; justify-content:center; align-items:center;
+        padding:12px; overflow:hidden; height:100vh;
     }
-
-    /* ===== HEADER ===== */
+    .dashboard {
+        max-width:1600px; width:100%; height:98vh; max-height:980px;
+        display:flex; flex-direction:column; gap:8px;
+        background:linear-gradient(145deg,#0f1a2b,#07101a);
+        border-radius:16px; padding:14px 18px 10px;
+        border:1px solid #1e3347;
+        box-shadow:0 8px 40px rgba(0,0,0,.6);
+        overflow:hidden;
+    }
     .header {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 6px 18px;
-        background: linear-gradient(135deg, #0f1a2b 0%, #1a2a3f 100%);
-        border-radius: 10px; border: 1px solid #2a4058;
-        margin-bottom: 8px; flex-shrink: 0; height: 48px;
+        display:flex; justify-content:space-between; align-items:center;
+        flex-shrink:0; padding-bottom:8px;
+        border-bottom:1px solid #1e3347; flex-wrap:wrap; gap:8px;
     }
+    .header-left { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
     .header h1 {
-        font-size: 22px; font-weight: 700;
-        background: linear-gradient(90deg, #4fc3f7, #00e676);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        letter-spacing: 1px;
+        font-size:1.1rem; font-weight:700;
+        background:linear-gradient(90deg,#4fc3f7,#00e676);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        display:flex; align-items:center; gap:8px;
     }
-    .header-info {
-        display: flex; gap: 18px; align-items: center;
-        font-size: 14px; color: #90aae4;
+    .fecha-destacada {
+        background:#1b3a4b; color:#4fc3f7; padding:3px 14px;
+        border-radius:60px; font-size:.75rem; font-weight:700;
+        -webkit-text-fill-color:#4fc3f7;
     }
-    .header-info span { color: #b0bec5; font-weight: 600; }
-    .badge {
-        background: #1b3a4b; padding: 3px 14px; border-radius: 20px;
-        font-size: 12px; color: #4fc3f7; border: 1px solid #2a5a7a;
+    .fecha-selector {
+        display:flex; align-items:center; gap:6px;
+        background:#0f1a2b; padding:3px 10px 3px 12px;
+        border-radius:60px; border:1px solid #2a5a7a;
     }
-    .load-btn {
-        background: linear-gradient(135deg, #1b3a4b, #2a5a7a);
-        color: #4fc3f7; border: 1px solid #4fc3f7;
-        padding: 4px 14px; border-radius: 20px; cursor: pointer;
-        font-weight: 700; font-size: 12px;
-        transition: all .2s;
-        font-family: inherit;
+    .fecha-selector label { font-size:.7rem; color:#78909c; font-weight:600; }
+    .fecha-selector select {
+        background:#1b3a4b; color:#4fc3f7; border:1px solid #2a5a7a;
+        padding:3px 8px; border-radius:30px; font-size:.75rem;
+        font-weight:700; cursor:pointer; outline:none;
     }
-    .load-btn:hover { background: linear-gradient(135deg, #2a5a7a, #3a7a9a); color:#e0f7ff; }
-    .date-select {
-        background: #1b3a4b; color: #4fc3f7;
-        border: 1px solid #2a5a7a; padding: 4px 10px;
-        border-radius: 20px; font-size: 12px; font-weight: 700;
-        cursor: pointer; font-family: inherit;
+    .file-status {
+        font-size:.65rem; color:#90aae4; font-weight:500;
+        background:#0f1a2b; padding:3px 10px; border-radius:60px;
+        border:1px solid #1e3347;
     }
+    .header-badges { display:flex; gap:6px; flex-wrap:wrap; }
+    .badge-csv {
+        background:#0f1a2b; padding:4px 12px; border-radius:60px;
+        border:1px solid #1e3347; color:#b0bec5; font-size:.7rem; font-weight:600;
+    }
+    .badge-csv span { background:#1b3a4b; padding:1px 8px; border-radius:30px; margin-left:4px; color:#4fc3f7; }
 
-    /* ===== GRID ===== */
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1.3fr 1fr 1fr;
-        grid-template-rows: 80px 1fr 0.9fr 0.7fr;
-        gap: 8px; flex: 1; min-height: 0;
+    .tabs-container {
+        display:flex; gap:4px; flex-shrink:0;
+        background:#0f1a2b; padding:4px; border-radius:12px;
+        border:1px solid #1e3347; flex-wrap:wrap;
     }
+    .tab-btn {
+        padding:6px 16px; border:none; background:transparent;
+        border-radius:8px; font-weight:600; font-size:.75rem;
+        color:#78909c; cursor:pointer; transition:all .2s;
+    }
+    .tab-btn:hover { background:#142230; color:#b0bec5; }
+    .tab-btn.active { background:#1b3a4b; color:#4fc3f7; box-shadow:0 2px 8px rgba(79,195,247,.15); }
 
-    .widget {
-        background: linear-gradient(145deg, #111d2b, #0a121c);
-        border-radius: 10px; padding: 10px 14px;
-        border: 1px solid #1e3347;
-        box-shadow: 0 4px 20px rgba(0,0,0,.6);
-        display: flex; flex-direction: column; overflow: hidden;
-    }
-    .widget-title {
-        font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;
-        color: #78909c; margin-bottom: 6px; font-weight: 700;
-        flex-shrink: 0; text-align: center;
-        border-bottom: 1px solid #1e3347; padding-bottom: 4px;
-    }
+    .tab-content { display:none; flex:1; min-height:0; flex-direction:column; gap:8px; }
+    .tab-content.active { display:flex; }
 
-    /* ===== KPI ===== */
-    .kpi-grid {
-        display: grid; grid-template-columns: repeat(4, 1fr);
-        gap: 8px; grid-column: 1 / 4; grid-row: 1;
+    .kpi-global-8 {
+        display:grid; grid-template-columns:repeat(8,1fr);
+        gap:6px; flex-shrink:0;
     }
+    .kpi-global { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; flex-shrink:0; }
     .kpi-card {
-        background: linear-gradient(145deg, #0f1a2b, #07101a);
-        border-radius: 8px; padding: 10px 14px;
-        border: 1px solid #1e3347;
-        display: flex; flex-direction: column;
-        justify-content: center; align-items: center; text-align: center;
+        background:#0f1a2b; padding:8px 12px; border-radius:10px;
+        border:1px solid #1e3347; border-left:3px solid #4fc3f7;
     }
+    .kpi-card:nth-child(2) { border-left-color:#00e676; }
+    .kpi-card:nth-child(3) { border-left-color:#ffb74d; }
+    .kpi-card:nth-child(4) { border-left-color:#f06292; }
+    .kpi-card:nth-child(5) { border-left-color:#ce93d8; }
+    .kpi-card:nth-child(6) { border-left-color:#4fc3f7; }
+    .kpi-card:nth-child(7) { border-left-color:#00e676; }
+    .kpi-card:nth-child(8) { border-left-color:#ffb74d; }
     .kpi-label {
-        font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
-        color: #78909c; font-weight: 600;
+        font-size:.55rem; text-transform:uppercase; letter-spacing:.05em;
+        color:#78909c; font-weight:700;
     }
-    .kpi-number { font-size: 34px; font-weight: 700; line-height: 1.2; }
-    .kpi-number.green  { color:#00e676; }
-    .kpi-number.blue   { color:#4fc3f7; }
-    .kpi-number.orange { color:#ffb74d; }
-    .kpi-number.pink   { color:#f06292; }
-    .kpi-sub { font-size: 12px; color:#78909c; margin-top: 2px; font-weight: 500; }
-
-    .chart-wrapper { flex:1; min-height:0; position:relative; }
-    .chart-wrapper canvas { width:100% !important; height:100% !important; }
-
-    .widget-turnos    { grid-column: 1/2; grid-row: 2; }
-    .widget-tiempos   { grid-column: 2/3; grid-row: 2; }
-    .widget-operarios { grid-column: 3/4; grid-row: 2; }
-    .widget-tabla     { grid-column: 1/3; grid-row: 3; }
-    .widget-metricas  { grid-column: 3/4; grid-row: 3; }
-    .widget-resumen   { grid-column: 1/4; grid-row: 4; }
-
-    /* ===== TABLA ===== */
-    .tabla-container { flex:1; overflow:auto; position:relative; }
-    .tabla-container table { width:100%; border-collapse:collapse; font-size:13px; }
-    .tabla-container thead { position: sticky; top:0; z-index:2; }
-    .tabla-container th {
-        text-align:left; padding:5px 8px; background:#0f1a2b;
-        color:#78909c; font-weight:700; text-transform:uppercase;
-        font-size:10px; letter-spacing:.5px;
-        border-bottom: 2px solid #1e3347;
+    .kpi-value {
+        font-size:1.3rem; font-weight:700; color:#e0e6ed;
+        line-height:1.2; margin-top:2px;
     }
-    .tabla-container td {
-        padding:4px 8px; border-bottom:1px solid #142230;
-        color:#b0bec5; font-size:12px;
-    }
-    .tabla-container tr:hover td { background:#142230; }
+    .kpi-value.blue { color:#4fc3f7; }
+    .kpi-value.green { color:#00e676; }
+    .kpi-value.orange { color:#ffb74d; }
+    .kpi-value.pink { color:#f06292; }
+    .kpi-value.purple { color:#ce93d8; }
+    .kpi-sub { font-size:.55rem; color:#78909c; margin-top:0; }
 
-    .status-dot {
-        display:inline-block; width:10px; height:10px; border-radius:50%;
-        margin-right:6px; vertical-align:middle;
+    .maquinas-grid {
+        display:grid; grid-template-columns:1fr 1fr;
+        gap:10px; flex:1; min-height:0;
     }
-    .status-dot.parcial   { background:#ffb74d; }
-    .status-dot.completo  { background:#00e676; }
-    .status-dot.pendiente { background:#f06292; }
-
-    /* ===== MÉTRICAS ===== */
-    .metricas-grid {
+    .maquina-block {
+        background:#0f1a2b; border-radius:12px; padding:12px 14px 10px;
+        border:1px solid #1e3347; display:flex; flex-direction:column;
+        border-top:3px solid #4fc3f7;
+    }
+    .maquina-block:nth-child(2) { border-top-color:#00e676; }
+    .maquina-header {
+        display:flex; justify-content:space-between; align-items:center;
+        flex-shrink:0; margin-bottom:6px;
+    }
+    .maquina-header h3 { font-weight:700; font-size:.85rem; color:#4fc3f7; }
+    .maquina-header .total-badge {
+        background:#1b3a4b; padding:2px 10px; border-radius:30px;
+        font-size:.65rem; font-weight:700; color:#4fc3f7;
+    }
+    .kpi-maquina-grid {
         display:grid; grid-template-columns:1fr 1fr; gap:2px 12px;
-        flex:1; align-content:start; padding-top:2px;
+        font-size:.7rem; padding:2px 0;
     }
-    .metrica-item {
+    .kpi-maquina-item {
         display:flex; justify-content:space-between;
-        padding:3px 4px; border-bottom:1px solid #142230;
-        font-size:13px; align-items:center;
+        padding:3px 2px; border-bottom:1px solid #142230;
     }
-    .metrica-item .label { color:#78909c; font-weight:500; }
-    .metrica-item .value { color:#e0e6ed; font-weight:700; font-size:14px; }
-    .metrica-item .value.green  { color:#00e676; }
-    .metrica-item .value.orange { color:#ffb74d; }
-    .metrica-item .value.pink   { color:#f06292; }
-    .metrica-item .value.blue   { color:#4fc3f7; }
+    .kpi-maquina-item .label { color:#78909c; font-weight:500; font-size:.65rem; }
+    .kpi-maquina-item .value { font-weight:700; color:#e0e6ed; font-size:.7rem; }
+    .kpi-maquina-item .value.efectividad { color:#00e676; }
+    .kpi-maquina-item .value.tiempo { color:#4fc3f7; }
+    .kpi-maquina-item .value.roturas { color:#f06292; }
 
-    /* ===== RESUMEN ===== */
-    .resumen-grid {
-        display:grid; grid-template-columns:1fr 1fr 1fr 1fr 2fr;
-        gap:6px; flex:1; align-content:center; padding:0 4px;
+    .tabla-wrapper {
+        flex:1; overflow:auto; border-radius:10px;
+        border:1px solid #1e3347; background:#0a121c;
     }
-    .resumen-item {
-        text-align:center; padding:4px 8px;
-        border-right:1px solid #1e3347;
-        display:flex; flex-direction:column; justify-content:center;
+    .tabla-wrapper table { width:100%; border-collapse:collapse; font-size:.75rem; min-width:900px; }
+    .tabla-wrapper th {
+        background:#0f1a2b; color:#78909c; font-weight:700;
+        padding:8px 10px; text-align:center;
+        border-bottom:2px solid #1e3347; position:sticky; top:0; z-index:10;
+        font-size:.65rem; text-transform:uppercase; letter-spacing:.03em;
     }
-    .resumen-item:last-child {
-        border-right:none; flex-direction:row; flex-wrap:wrap;
-        align-items:center; gap:8px 16px; justify-content:center;
+    .tabla-wrapper td {
+        padding:6px 10px; text-align:center;
+        border-bottom:1px solid #142230; color:#b0bec5; font-size:.75rem;
     }
-    .resumen-item .label {
-        font-size:11px; text-transform:uppercase; color:#78909c;
-        letter-spacing:.5px; font-weight:600;
-    }
-    .resumen-item .value { font-size:20px; font-weight:700; margin-top:2px; }
-    .resumen-item .value.green  { color:#00e676; }
-    .resumen-item .value.orange { color:#ffb74d; }
-    .resumen-item .value.pink   { color:#f06292; }
-    .resumen-item .value.blue   { color:#4fc3f7; }
-    .resumen-item .value.purple { color:#ce93d8; }
-    .lote-detalle { font-size:13px; color:#b0bec5; font-weight:600; }
-    .lote-detalle .completo  { color:#00e676; }
-    .lote-detalle .parcial   { color:#ffb74d; }
+    .tabla-wrapper tr:hover td { background:#142230; }
+    .tabla-wrapper .total-row { background:#0f1a2b !important; font-weight:700; }
+    .tabla-wrapper .total-row td { border-top:2px solid #1e3347; border-bottom:2px solid #1e3347; color:#e0e6ed; }
+    .tabla-wrapper .nombre-col { font-weight:600; color:#4fc3f7; text-align:left; }
+    .tabla-wrapper .maquina-col { text-align:left; font-weight:500; color:#90aae4; }
 
-    /* ===== OVERLAY (estado vacío / drag) ===== */
-    .overlay {
-        position:fixed; inset:0; background:rgba(10,14,23,.92);
-        display:flex; flex-direction:column; justify-content:center; align-items:center;
-        z-index:1000; text-align:center; padding:40px;
-        border:3px dashed #4fc3f7; margin:12px; border-radius:16px;
+    .roturas-grid {
+        display:grid; grid-template-columns:1fr 1fr;
+        gap:10px; flex:1; min-height:0;
     }
-    .overlay.hidden { display:none; }
-    .overlay h2 { font-size:28px; color:#4fc3f7; margin-bottom:12px; }
-    .overlay p  { color:#b0bec5; font-size:15px; margin-bottom:8px; }
-    .overlay .hint { color:#78909c; font-size:13px; margin-top:20px; }
-    .overlay.drag { border-color:#00e676; background:rgba(0,230,118,.08); }
-    .overlay button {
-        margin-top:20px; padding:12px 32px; font-size:16px;
-        background:linear-gradient(135deg, #1b3a4b, #2a5a7a);
-        color:#4fc3f7; border:2px solid #4fc3f7; border-radius:30px;
-        cursor:pointer; font-weight:700; font-family:inherit;
-        transition:all .2s;
+    .rotura-block {
+        background:#0f1a2b; border-radius:12px; padding:12px 14px 10px;
+        border:1px solid #1e3347; display:flex; flex-direction:column;
+        border-top:3px solid #4fc3f7;
     }
-    .overlay button:hover { background:linear-gradient(135deg, #2a5a7a, #3a7a9a); color:#e0f7ff; }
+    .rotura-block:nth-child(2) { border-top-color:#00e676; }
+    .rotura-header {
+        display:flex; justify-content:space-between; align-items:center;
+        flex-shrink:0; margin-bottom:6px;
+    }
+    .rotura-header h3 { font-weight:700; font-size:.85rem; color:#4fc3f7; }
+    .rotura-header .total-badge {
+        background:#1b3a4b; padding:2px 10px; border-radius:30px;
+        font-size:.65rem; font-weight:700; color:#4fc3f7;
+    }
+    .rotura-detalle-wrap { flex:1; overflow:auto; margin-top:2px; }
+    .rotura-detalle-wrap table { width:100%; border-collapse:collapse; font-size:.72rem; }
+    .rotura-detalle-wrap th {
+        text-align:left; padding:4px 4px 4px 0; font-weight:700;
+        color:#90aae4; border-bottom:1px solid #1e3347;
+        font-size:.6rem; text-transform:uppercase;
+    }
+    .rotura-detalle-wrap td {
+        padding:4px 4px 4px 0; border-bottom:1px solid #142230;
+        color:#b0bec5; font-size:.72rem;
+    }
+    .porcentaje-bar {
+        display:inline-block; height:5px; border-radius:3px;
+        background:#4fc3f7; margin-right:4px; vertical-align:middle;
+    }
+    .porcentaje-text { font-weight:600; color:#90aae4; font-size:.65rem; }
+    .sin-datos-msg {
+        text-align:center; color:#78909c; font-size:.75rem;
+        padding:20px 0; font-weight:500;
+    }
 
-    @media (max-width: 1200px) {
-        .dashboard-grid { grid-template-columns:1fr 1fr; grid-template-rows:auto; }
-        .kpi-grid { grid-column:1/3; grid-template-columns:repeat(2,1fr); }
-        .widget-turnos, .widget-tiempos, .widget-operarios,
-        .widget-tabla, .widget-metricas, .widget-resumen { grid-column:1/3; }
-        .resumen-grid { grid-template-columns:1fr 1fr 1fr; }
-        .resumen-item:last-child { grid-column:1/4; border-right:none; flex-wrap:wrap; }
+    .loading-overlay {
+        position:fixed; top:0; left:0; right:0; bottom:0;
+        background:rgba(10,14,23,.92);
+        display:flex; justify-content:center; align-items:center;
+        flex-direction:column; gap:14px; z-index:9999;
     }
-    @media (max-width: 768px) {
-        .header h1 { font-size:16px; }
-        .header-info { font-size:11px; gap:10px; }
-        .kpi-number { font-size:24px; }
-        .tabla-container table { font-size:10px; }
-        .tabla-container td { font-size:10px; }
-        .metrica-item { font-size:11px; }
-        .metrica-item .value { font-size:12px; }
-        .resumen-item .value { font-size:16px; }
+    .loading-overlay.hidden { display:none; }
+    .loading-spinner {
+        width:44px; height:44px;
+        border:4px solid #1e3347; border-top-color:#4fc3f7;
+        border-radius:50%; animation:spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-text { color:#4fc3f7; font-weight:700; font-size:.9rem; }
+    .loading-sub { color:#78909c; font-size:.75rem; }
+
+    .error-panel {
+        background:#3a0f1a; border:1px solid #f06292;
+        border-radius:10px; padding:12px 16px;
+        color:#f06292; font-size:.8rem; margin-bottom:8px;
+        display:none;
+    }
+    .error-panel.visible { display:block; }
+    .error-panel ul { margin-left:18px; margin-top:6px; }
+    .error-panel li { margin-bottom:3px; color:#f8b0c0; }
+
+    .com-lista { flex:1; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:8px; }
+    .com-vacio { text-align:center; color:#78909c; font-size:.75rem; padding:20px 0; font-style:italic; }
+    .com-item {
+        background:#0f1a2b; border:1px solid #1e3347; border-left:3px solid #4fc3f7;
+        border-radius:8px; padding:10px 12px;
+    }
+    .com-item-header {
+        display:flex; justify-content:space-between; align-items:center;
+        flex-wrap:wrap; gap:4px; margin-bottom:6px;
+    }
+    .com-item-meta { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .com-cat {
+        background:#1b3a4b; color:#4fc3f7; padding:1px 8px;
+        border-radius:30px; font-size:.6rem; font-weight:700; text-transform:uppercase;
+    }
+    .com-maq { background:#3a2f1a; color:#ffb74d; padding:1px 8px; border-radius:30px; font-size:.6rem; font-weight:600; }
+    .com-nombre { font-size:.75rem; font-weight:700; color:#4fc3f7; }
+    .com-fecha { font-size:.65rem; color:#78909c; }
+    .com-texto { font-size:.75rem; color:#b0bec5; line-height:1.4; word-break:break-word; }
+
+    .com-block {
+        background:#0f1a2b; border-radius:12px; padding:14px 16px;
+        border:1px solid #1e3347; border-top:3px solid #4fc3f7;
+        display:flex; flex-direction:column; min-height:0; overflow:hidden;
+    }
+    .com-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-shrink:0; }
+    .com-header h3 { font-weight:700; font-size:.85rem; color:#4fc3f7; }
+    .com-badge { background:#1b3a4b; padding:2px 10px; border-radius:30px; font-size:.65rem; font-weight:700; color:#4fc3f7; }
+    .com-form { display:flex; flex-direction:column; gap:8px; flex:1; overflow-y:auto; padding-right:4px; }
+    .com-row { display:flex; flex-direction:column; gap:4px; }
+    .com-row label { font-size:.7rem; font-weight:600; color:#90aae4; }
+    .com-row input, .com-row select, .com-row textarea {
+        padding:7px 10px; border:1px solid #1e3347; border-radius:6px;
+        font-size:.75rem; font-family:inherit; color:#e0e6ed;
+        background:#0a121c; outline:none; resize:vertical;
+    }
+    .com-row input:focus, .com-row select:focus, .com-row textarea:focus {
+        border-color:#4fc3f7;
+        box-shadow:0 0 0 3px rgba(79,195,247,.15);
+    }
+    .com-row textarea { min-height:70px; }
+    .com-char-count { font-size:.6rem; color:#78909c; text-align:right; }
+    .com-actions { display:flex; align-items:center; gap:10px; margin-top:4px; flex-wrap:wrap; }
+    .com-btn {
+        padding:8px 18px; border-radius:8px; border:1px solid #2a5a7a;
+        background:#1b3a4b; color:#4fc3f7; font-weight:700;
+        font-size:.75rem; cursor:pointer; transition:all .2s;
+    }
+    .com-btn.primary { background:#1b3a4b; color:#4fc3f7; }
+    .com-btn.primary:hover { background:#2a5a7a; color:#e0f7ff; }
+    .com-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .com-estado { font-size:.7rem; color:#90aae4; font-weight:500; }
+
+    .com-filtros { display:flex; gap:6px; margin-bottom:8px; flex-shrink:0; }
+    .com-filtro {
+        padding:6px 10px; border:1px solid #1e3347; border-radius:6px;
+        font-size:.7rem; background:#0a121c; color:#e0e6ed; outline:none;
+        font-family:inherit;
+    }
+    .com-filtro:focus { border-color:#4fc3f7; }
+    #comFiltroCat { min-width:140px; }
+    #comBuscar { flex:1; }
+    .com-btn-clear {
+        background:#0a121c; border:1px solid #1e3347; border-radius:6px;
+        padding:6px 12px; cursor:pointer; font-size:.75rem; color:#78909c;
+    }
+    .com-btn-clear:hover { background:#3a0f1a; color:#f06292; border-color:#f06292; }
+
+    @media (max-width:1400px) {
+        .kpi-global-8 { grid-template-columns:repeat(4,1fr); }
+    }
+    @media (max-width:900px) {
+        body { overflow-y:auto !important; height:auto !important; align-items:flex-start !important; }
+        .dashboard { height:auto !important; max-height:none !important; }
+        .kpi-global-8 { grid-template-columns:repeat(2,1fr); }
+        .kpi-global { grid-template-columns:repeat(2,1fr); }
+        .maquinas-grid, .roturas-grid { grid-template-columns:1fr; }
+        .header { flex-direction:column; align-items:stretch; }
+        .header-left { flex-wrap:wrap; }
     }
 </style>
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
-<header class="header">
-    <h1 id="title">📊 DASHBOARD · SIN DATOS</h1>
-    <div class="header-info">
-        <span>🏭 <span id="maquinaInfo">TENIDO TREN 02</span></span>
-        <span>📦 1 LOTE = 16,700 m</span>
-        <select id="dateSelect" class="date-select" hidden></select>
-        <button id="loadBtn" class="load-btn">📁 Cargar CSVs</button>
-        <input type="file" id="fileInput" accept=".csv" multiple hidden>
-        <span class="badge">🔄 <span id="updateTime">—</span></span>
-    </div>
-</header>
-
-<!-- ===== GRID ===== -->
-<div class="dashboard-grid">
-
-    <!-- KPI -->
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-label">📊 Metros Producidos</div>
-            <div class="kpi-number blue" id="totalMetros">0</div>
-            <div class="kpi-sub">Total día</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-label">📦 Lotes Procesados</div>
-            <div class="kpi-number green" id="totalLotes">0.00</div>
-            <div class="kpi-sub">Equivalentes a 16,700 m</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-label">⚡ Efectividad</div>
-            <div class="kpi-number orange" id="efectividad">0%</div>
-            <div class="kpi-sub" id="efectividadSub">vs 1 lote por turno</div>
-        </div>
-        <div class="kpi-card">
-            <div class="kpi-label">⏱️ Tiempo Perdido</div>
-            <div class="kpi-number pink" id="tiempoPerdido">0h</div>
-            <div class="kpi-sub">Total del día</div>
-        </div>
-    </div>
-
-    <!-- Gráficos -->
-    <div class="widget widget-turnos">
-        <div class="widget-title">🕒 Producción por Turno</div>
-        <div class="chart-wrapper"><canvas id="chartTurnos"></canvas></div>
-    </div>
-    <div class="widget widget-tiempos">
-        <div class="widget-title">⏳ Tiempos Perdidos</div>
-        <div class="chart-wrapper"><canvas id="chartTiempos"></canvas></div>
-    </div>
-    <div class="widget widget-operarios">
-        <div class="widget-title">👨‍🔧 Producción por Operario</div>
-        <div class="chart-wrapper"><canvas id="chartOperarios"></canvas></div>
-    </div>
-
-    <!-- Tabla -->
-    <div class="widget widget-tabla">
-        <div class="widget-title" id="tablaTitle">📋 Detalle de Producción</div>
-        <div class="tabla-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Turno</th><th>Horario</th><th>Operario</th>
-                        <th>Lote</th><th>Metros</th><th>% Lote</th><th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaBody"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Métricas -->
-    <div class="widget widget-metricas">
-        <div class="widget-title">📈 Métricas Complementarias</div>
-        <div class="metricas-grid" id="metricasGrid"></div>
-    </div>
-
-    <!-- Resumen -->
-    <div class="widget widget-resumen">
-        <div class="widget-title">📦 Estado de Lotes</div>
-        <div class="resumen-grid" id="resumenLotes"></div>
-    </div>
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Iniciando dashboard…</div>
+    <div class="loading-sub" id="loadingSub">Leyendo data/index.json</div>
 </div>
 
-<!-- Overlay: estado vacío / drag -->
-<div class="overlay" id="overlay">
-    <h2 id="overlayTitle">📁 Carga los CSVs del día</h2>
-    <p>Arrastra aquí <b>tenido_YYYYMMDD.csv</b> y <b>tiempos_perdidos_YYYYMMDD.csv</b></p>
-    <p class="hint">También puedes hacer clic en el botón de abajo o usar el botón "Cargar CSVs" del encabezado</p>
-    <button id="overlayBtn">📂 Seleccionar archivos</button>
-</div>
+<div class="dashboard">
+    <div class="header">
+        <div class="header-left">
+            <h1>📊 TENIDO <span class="fecha-destacada" id="fechaMostrada">—</span></h1>
+            <div class="fecha-selector">
+                <label for="fechaSelect">📅 Fecha:</label>
+                <select id="fechaSelect"><option value="">Cargando…</option></select>
+            </div>
+            <span class="file-status" id="fileStatus">Iniciando…</span>
+        </div>
+        <div class="header-badges">
+            <div class="badge-csv">📁 Datos <span id="totalRegistros">0</span> reg</div>
+            <div class="badge-csv">💬 <span id="badgeComCount">0</span> comentarios</div>
+        </div>
+    </div>
 
-<script>
-/* ================================================================
-   CONSTANTES
-   ================================================================ */
-const LOTE_STANDARD      = 16700;
-const LOTES_DIA_OBJETIVO = 5;
+    <div class="tabs-container">
+        <button class="tab-btn active" data-tab="maquina">🏭 Tren</button>
+        <button class="tab-btn" data-tab="operador">👤 Operador</button>
+        <button class="tab-btn" data-tab="titulo">📌 Estilo</button>
+        <button class="tab-btn" data-tab="tiempos">⏱️ Tiempos</button>
+        <button class="tab-btn" data-tab="comentarios">💬 Comentarios</button>
+    </div>
 
-/* ================================================================
-   ESTADO GLOBAL
-   ================================================================ */
-const state = {
-    byDate: {},        // { 'YYYYMMDD': { produccion: [...], tiempos: [...] } }
-    currentDate: null,
-    charts: {},
-    maquina: 'TENIDO TREN 02'
-};
+    <!-- TAB TREN (Máquina) -->
+    <div class="tab-content active" id="tab-maquina">
+        <div class="error-panel" id="errorPanel"></div>
+        <div class="kpi-global-8">
+            <div class="kpi-card"><div class="kpi-label">Mts Producidos</div><div class="kpi-value blue" id="kpiProdMts">-</div><div class="kpi-sub">total día</div></div>
+            <div class="kpi-card"><div class="kpi-label">Mts a Teñir</div><div class="kpi-value" id="kpiEspMts">-</div><div class="kpi-sub">objetivo</div></div>
+            <div class="kpi-card"><div class="kpi-label">% Avance</div><div class="kpi-value green" id="kpiAvance">-</div><div class="kpi-sub">prod / objetivo</div></div>
+            <div class="kpi-card"><div class="kpi-label">Lotes</div><div class="kpi-value orange" id="kpiLotes">-</div><div class="kpi-sub">distintos</div></div>
+            <div class="kpi-card"><div class="kpi-label">T. Productivo</div><div class="kpi-value blue" id="kpiTiempoGlobal">-</div><div class="kpi-sub">HH:MM</div></div>
+            <div class="kpi-card"><div class="kpi-label">T. Perdido</div><div class="kpi-value pink" id="kpiTpTotalHoras">-</div><div class="kpi-sub">horas</div></div>
+            <div class="kpi-card"><div class="kpi-label">Disponibilidad</div><div class="kpi-value green" id="kpiDisponibilidad">-</div><div class="kpi-sub">sobre 24 h</div></div>
+            <div class="kpi-card"><div class="kpi-label">Efectividad</div><div class="kpi-value purple" id="kpiEfectividad">-</div><div class="kpi-sub">vs 3 turnos</div></div>
+        </div>
+        <div class="maquinas-grid" id="maquinaGrid"></div>
+    </div>
 
-const $ = id => document.getElementById(id);
-
-/* ================================================================
-   PARSEO CSV (maneja comillas, comas, punto y coma, BOM)
-   ================================================================ */
-function parseCSV(rawText) {
-    if (!rawText) return [];
-    let text = rawText.replace(/^\uFEFF/, '');
-
-    // Detectar delimitador
-    const firstLine = text.split(/\r?\n/)[0] || '';
-    const nSemi = (firstLine.match(/;/g) || []).length;
-    const nComma = (firstLine.match(/,/g) || []).length;
-    const delim = nSemi > nComma ? ';' : ',';
-
-    const rows = [];
-    let row = [], field = '', inQuotes = false;
-
-    for (let i = 0; i < text.length; i++) {
-        const c = text[i];
-        if (inQuotes) {
-            if (c === '"') {
-                if (text[i+1] === '"') { field += '"'; i++; }
-                else inQuotes = false;
-            } else field += c;
-        } else {
-            if (c === '"') inQuotes = true;
-            else if (c === delim) { row.push(field); field = ''; }
-            else if (c === '\n')  { row.push(field); rows.push(row); row = []; field = ''; }
-            else if (c === '\r')  { /* skip */ }
-            else field += c;
-        }
-    }
-    if (field !== '' || row.length) { row.push(field); rows.push(row); }
-
-    if (!rows.length) return [];
-    const headers = rows[0].map(h => h.trim());
-    return rows.slice(1)
-        .filter(r => r.some(v => v !== ''))
-        .map(r => {
-            const o = {};
-            headers.forEach((h, i) => o[h] = (r[i] ?? '').trim());
-            return o;
-        });
-}
-
-/* ================================================================
-   UTILIDADES
-   ================================================================ */
-function formatDate(yyyymmdd) {
-    if (!yyyymmdd || yyyymmdd.length !== 8) return '—';
-    const y = yyyymmdd.slice(0,4), m = yyyymmdd.slice(4,6), d = yyyymmdd.slice(6,8);
-    return `${d}/${m}/${y}`;
-}
-
-function detectType(filename, rows) {
-    const n = filename.toLowerCase();
-    if (n.includes('tiempos') || n.includes('perdido')) return 'tiempos';
-    if (n.includes('tenido') || n.includes('produccion') || n.includes('producción')) return 'produccion';
-    // Por contenido
-    const keys = Object.keys(rows[0] || {});
-    if (keys.includes('Causa') || keys.includes('% Tiempo Perdido')) return 'tiempos';
-    if (keys.includes('Metros Producidos') || keys.includes('Persona')) return 'produccion';
-    return null;
-}
-
-function extractDate(filename, rows) {
-    // 1) desde el nombre del archivo
-    const m = filename.match(/(\d{8})/);
-    if (m) return m[1];
-    // 2) desde el contenido
-    const r0 = rows[0] || {};
-    const raw = r0['fecha'] || r0['Fecha'] || '';
-    const digits = String(raw).replace(/[^0-9]/g, '');
-    if (digits.length >= 8) return digits.slice(0, 8);
-    return null;
-}
-
-function groupBy(arr, keyFn) {
-    return arr.reduce((acc, x) => {
-        const k = keyFn(x);
-        (acc[k] = acc[k] || []).push(x);
-        return acc;
-    }, {});
-}
-
-/* ================================================================
-   CARGA DE ARCHIVOS
-   ================================================================ */
-async function loadFiles(fileList) {
-    const files = Array.from(fileList).filter(f => f.name.toLowerCase().endsWith('.csv'));
-    if (!files.length) return;
-
-    for (const file of files) {
-        const text = await file.text();
-        const rows = parseCSV(text);
-        if (!rows.length) continue;
-
-        const fecha = extractDate(file.name, rows);
-        if (!fecha) {
-            console.warn('No se pudo detectar la fecha en', file.name);
-            continue;
-        }
-        const tipo = detectType(file.name, rows);
-        if (!tipo) {
-            console.warn('Tipo desconocido para', file.name);
-            continue;
-        }
-
-        if (!state.byDate[fecha]) state.byDate[fecha] = { produccion: [], tiempos: [] };
-        state.byDate[fecha][tipo] = rows;
-    }
-
-    const fechas = Object.keys(state.byDate).sort();
-    if (!fechas.length) return;
-
-    // Poblar el selector de fecha
-    const sel = $('dateSelect');
-    sel.innerHTML = '';
-    fechas.forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f;
-        opt.textContent = formatDate(f);
-        sel.appendChild(opt);
-    });
-    sel.hidden = fechas.length < 2;
-
-    state.currentDate = fechas[fechas.length - 1];
-    sel.value = state.currentDate;
-
-    $('overlay').classList.add('hidden');
-    $('updateTime').textContent = new Date().toLocaleString('es-ES');
-    render();
-}
-
-/* ================================================================
-   CÁLCULO DE MÉTRICAS
-   ================================================================ */
-function computeMetrics(prodRows, tpRows) {
-    const totalMetros  = prodRows.reduce((s, r) => s + r.metros, 0);
-    const totalLotes   = totalMetros / LOTE_STANDARD;
-    const numTurnos    = prodRows.length || 1;
-    const efectividad  = (totalLotes / numTurnos) * 100;
-    const totalHoras   = tpRows.reduce((s, t) => s + t.horas, 0);
-    const horasProd    = Math.max(24 - totalHoras, 0.01);
-    const disponibilidad = (horasProd / 24) * 100;
-    const velocidad    = horasProd > 0 ? totalMetros / horasProd : 0;
-    const tiempoLote   = velocidad > 0 ? LOTE_STANDARD / velocidad : 0;
-    const impacto      = totalHoras * velocidad;
-
-    // Por turno
-    const porTurno = groupBy(prodRows, r => r.turno);
-    const turnoSum = Object.entries(porTurno).map(([k, v]) => ({
-        turno: k, metros: v.reduce((s, x) => s + x.metros, 0)
-    }));
-    const mejor = [...turnoSum].sort((a,b) => b.metros - a.metros)[0];
-    const peor  = [...turnoSum].sort((a,b) => a.metros - b.metros)[0];
-
-    const causaPrincipal = tpRows.length
-        ? [...tpRows].sort((a,b) => b.horas - a.horas)[0]
-        : null;
-
-    return {
-        totalMetros, totalLotes, numTurnos, efectividad,
-        totalHoras, horasProd, disponibilidad, velocidad,
-        tiempoLote, impacto, mejor, peor, causaPrincipal, turnoSum
-    };
-}
-
-/* ================================================================
-   RENDER PRINCIPAL
-   ================================================================ */
-function render() {
-    const fecha = state.currentDate;
-    if (!fecha) return;
-    const data = state.byDate[fecha] || { produccion: [], tiempos: [] };
-
-    // Normalizar filas
-    const prodRows = data.produccion.map((r, i) => ({
-        idx: i,
-        turno:    r['Turno'] || '—',
-        horaIni:  r['Hora Inicio'] || '',
-        horaFin:  r['fecha fin_hora'] || '',
-        horario:  `${r['Hora Inicio'] || '—'} → ${r['fecha fin_hora'] || '—'}`,
-        operario: r['Persona'] || '—',
-        lote:     r['Lote'] || '—',
-        estilo:   r['Estilo'] || '—',
-        metros:   parseFloat(r['Metros Producidos']) || 0
-    }));
-    const tpRows = data.tiempos.map(r => ({
-        causa: r['Causa'] || '—',
-        horas: parseFloat(r['Horas']) || 0,
-        pct:   parseFloat(r['% Tiempo Perdido']) || 0
-    }));
-
-    const m = computeMetrics(prodRows, tpRows);
-
-    // Títulos
-    $('title').textContent      = `📊 DASHBOARD · ${formatDate(fecha)}`;
-    $('tablaTitle').textContent = `📋 Detalle de Producción · ${formatDate(fecha)}`;
-    if (prodRows[0]) {
-        // Detectar máquina del propio CSV
-        const mq = data.produccion[0]['Maquina'] || state.maquina;
-        $('maquinaInfo').textContent = mq;
-    }
-
-    renderKPIs(m);
-    renderTabla(prodRows);
-    renderMetricas(m);
-    renderResumen(prodRows, m);
-    renderCharts(prodRows, tpRows);
-}
-
-/* ---------- KPIs ---------- */
-function renderKPIs(m) {
-    $('totalMetros').textContent   = m.totalMetros.toLocaleString();
-    $('totalLotes').textContent    = m.totalLotes.toFixed(2);
-    $('efectividad').textContent   = m.efectividad.toFixed(1) + '%';
-    $('tiempoPerdido').textContent = m.totalHoras.toFixed(2) + 'h';
-    $('efectividadSub').textContent = `vs 1 lote por turno (${m.numTurnos} turnos)`;
-}
-
-/* ---------- Tabla ---------- */
-function renderTabla(prodRows) {
-    const tbody = $('tablaBody');
-    tbody.innerHTML = '';
-    if (!prodRows.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#78909c;padding:20px;">Sin datos de producción</td></tr>';
-        return;
-    }
-    prodRows.forEach(r => {
-        const pct = (r.metros / LOTE_STANDARD) * 100;
-        let cls = 'pendiente', txt = 'Pendiente';
-        if (pct >= 100) { cls = 'completo'; txt = 'Completo'; }
-        else if (pct > 0) { cls = 'parcial'; txt = 'Parcial'; }
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${r.turno}</strong></td>
-            <td>${r.horario}</td>
-            <td>${r.operario}</td>
-            <td>${r.lote}</td>
-            <td>${r.metros.toLocaleString()}</td>
-            <td>${pct.toFixed(1)}%</td>
-            <td><span class="status-dot ${cls}"></span>${txt}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-/* ---------- Métricas ---------- */
-function renderMetricas(m) {
-    const grid = $('metricasGrid');
-    grid.innerHTML = '';
-    const mejorTxt = m.mejor ? `${m.mejor.turno}: ${m.mejor.metros.toLocaleString()}m` : '—';
-    const peorTxt  = m.peor  ? `${m.peor.turno}: ${m.peor.metros.toLocaleString()}m`  : '—';
-    const causaTxt = m.causaPrincipal
-        ? `${m.causaPrincipal.causa}: ${m.causaPrincipal.horas.toFixed(2)}h`
-        : '—';
-
-    const metricas = [
-        { label: 'Disponibilidad',     value: m.disponibilidad.toFixed(1) + '%',        cls: 'green' },
-        { label: 'Velocidad Promedio', value: m.velocidad.toFixed(0) + ' m/h',          cls: 'blue' },
-        { label: 'Tiempo / Lote',      value: m.tiempoLote.toFixed(2) + ' h',           cls: 'orange' },
-        { label: 'Mejor Turno',        value: mejorTxt,                                 cls: 'green' },
-        { label: 'Peor Turno',         value: peorTxt,                                  cls: 'pink' },
-        { label: 'Causa Principal',    value: causaTxt,                                 cls: 'pink' },
-        { label: 'Horas Productivas',  value: m.horasProd.toFixed(2) + 'h',             cls: 'green' },
-        { label: 'Impacto por Paradas',value: m.impacto.toFixed(0) + 'm',               cls: 'orange' }
-    ];
-    metricas.forEach(mt => {
-        const d = document.createElement('div');
-        d.className = 'metrica-item';
-        d.innerHTML = `<span class="label">${mt.label}</span><span class="value ${mt.cls}">${mt.value}</span>`;
-        grid.appendChild(d);
-    });
-}
-
-/* ---------- Resumen de lotes ---------- */
-function renderResumen(prodRows, m) {
-    const cont = $('resumenLotes');
-    cont.innerHTML = '';
-
-    // Agrupar por lote
-    const porLote = groupBy(prodRows, r => r.lote);
-    const lotesArr = Object.entries(porLote);
-
-    const completados = lotesArr.filter(([_, v]) =>
-        v.reduce((s,x) => s+x.metros, 0) >= LOTE_STANDARD).length;
-    const parciales = lotesArr.filter(([_, v]) => {
-        const t = v.reduce((s,x) => s+x.metros, 0);
-        return t > 0 && t < LOTE_STANDARD;
-    }).length;
-    const pendientes = Math.max(0, LOTES_DIA_OBJETIVO - lotesArr.length);
-
-    const items = [
-        { label: 'Lotes Trabajados', value: lotesArr.length, cls: 'blue'   },
-        { label: 'Completados',      value: completados,     cls: 'green'  },
-        { label: 'Parciales',        value: parciales,       cls: 'orange' },
-        { label: 'Pendientes',       value: pendientes,      cls: 'pink'   }
-    ];
-    items.forEach(it => {
-        const d = document.createElement('div');
-        d.className = 'resumen-item';
-        d.innerHTML = `<div class="label">${it.label}</div><div class="value ${it.cls}">${it.value}</div>`;
-        cont.appendChild(d);
-    });
-
-    // Detalle
-    const det = document.createElement('div');
-    det.className = 'resumen-item';
-    if (!lotesArr.length) {
-        det.innerHTML = '<span class="lote-detalle">Sin lotes iniciados</span>';
-    } else {
-        det.innerHTML = lotesArr.map(([lote, v]) => {
-            const t = v.reduce((s,x) => s+x.metros, 0);
-            const pct = (t / LOTE_STANDARD) * 100;
-            const cls = pct >= 100 ? 'completo' : 'parcial';
-            return `<span class="lote-detalle">${lote}: <span class="${cls}">${t.toLocaleString()}m (${pct.toFixed(1)}%)</span></span>`;
-        }).join('');
-    }
-    cont.appendChild(det);
-}
-
-/* ---------- Gráficos ---------- */
-function destroyCharts() {
-    Object.values(state.charts).forEach(c => c && c.destroy());
-    state.charts = {};
-}
-
-function renderCharts(prodRows, tpRows) {
-    destroyCharts();
-
-    /* ===== 1. Turnos ===== */
-    const turnoCount = {};
-    const labelsTurnos = prodRows.map(r => {
-        turnoCount[r.turno] = (turnoCount[r.turno] || 0) + 1;
-        // Si el turno se repite, agregar hora inicio
-        const repetido = prodRows.filter(x => x.turno === r.turno).length > 1;
-        return repetido ? `${r.turno} (${r.horaIni})` : r.turno;
-    });
-    const valuesTurnos = prodRows.map(r => r.metros);
-
-    state.charts.turnos = new Chart($('chartTurnos').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: labelsTurnos,
-            datasets: [{
-                data: valuesTurnos,
-                backgroundColor: valuesTurnos.map((_,i) => ['#4fc3f7','#f06292','#ffb74d','#ce93d8'][i % 4]),
-                borderRadius: 4, borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend:{display:false}, tooltip:{enabled:false} },
-            scales: {
-                y: { beginAtZero:true,
-                     ticks:{color:'#78909c', font:{size:11, weight:'600'}},
-                     grid:{color:'#142230'},
-                     title:{display:true, text:'Metros', color:'#78909c', font:{size:11, weight:'700'}} },
-                x: { ticks:{color:'#b0bec5', font:{size:10, weight:'600'}},
-                     grid:{display:false} }
-            }
-        },
-        plugins: [{
-            id: 'vals',
-            afterDraw(chart) {
-                const ctx = chart.ctx;
-                chart.data.datasets.forEach((ds, i) => {
-                    chart.getDatasetMeta(i).data.forEach((bar, idx) => {
-                        const v = ds.data[idx];
-                        if (!v) return;
-                        ctx.fillStyle = '#e0e6ed';
-                        ctx.font = 'bold 11px Segoe UI';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'bottom';
-                        ctx.fillText(`${v.toLocaleString()}m\n(${(v/LOTE_STANDARD).toFixed(2)} lts)`, bar.x, bar.y - 4);
-                    });
-                });
-            }
-        }]
-    });
-
-    /* ===== 2. Tiempos Perdidos ===== */
-    const coloresTP = ['#f06292','#ffb74d','#4fc3f7','#ce93d8','#00e676'];
-    state.charts.tiempos = new Chart($('chartTiempos').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: tpRows.map(t => t.causa),
-            datasets: [{
-                data: tpRows.map(t => t.horas),
-                backgroundColor: coloresTP,
-                borderColor: '#0a0e17', borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false, cutout: '55%',
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { color:'#b0bec5', font:{size:10, weight:'600'}, boxWidth:12, padding:8 }
-                },
-                tooltip: { enabled: false }
-            }
-        },
-        plugins: [{
-            id: 'center',
-            afterDraw(chart) {
-                const total = chart.data.datasets[0].data.reduce((a,b) => a+b, 0);
-                const meta = chart.getDatasetMeta(0).data[0];
-                if (!meta) return;
-                const ctx = chart.ctx;
-                ctx.fillStyle = '#e0e6ed';
-                ctx.font = 'bold 16px Segoe UI';
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(total.toFixed(2) + 'h', meta.x, meta.y - 6);
-                ctx.fillStyle = '#78909c';
-                ctx.font = '10px Segoe UI';
-                ctx.fillText('Total Perdido', meta.x, meta.y + 16);
-            }
-        }]
-    });
-
-    /* ===== 3. Operarios ===== */
-    const porOp = groupBy(prodRows, r => r.operario);
-    const opLabels = Object.keys(porOp).map(n => n.split(/[,\s]+/).filter(Boolean).pop());
-    const opValues = Object.values(porOp).map(v => v.reduce((s,x) => s+x.metros, 0));
-    const coloresOp = ['#00e676','#4fc3f7','#ffb74d','#ce93d8','#f06292'];
-
-    state.charts.operarios = new Chart($('chartOperarios').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: opLabels,
-            datasets: [{
-                data: opValues,
-                backgroundColor: coloresOp.slice(0, opLabels.length),
-                borderRadius: 4, borderSkipped: false
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend:{display:false}, tooltip:{enabled:false} },
-            scales: {
-                y: { ticks:{color:'#b0bec5', font:{size:11, weight:'600'}}, grid:{display:false} },
-                x: { beginAtZero:true,
-                     ticks:{color:'#78909c', font:{size:10, weight:'600'}},
-                     grid:{color:'#142230'},
-                     title:{display:true, text:'Metros', color:'#78909c', font:{size:11, weight:'700'}} }
-            }
-        },
-        plugins: [{
-            id: 'valsOp',
-            afterDraw(chart) {
-                const ctx = chart.ctx;
-                chart.data.datasets.forEach((ds, i) => {
-                    chart.getDatasetMeta(i).data.forEach((bar, idx) => {
-                        const v = ds.data[idx];
-                        if (!v) return;
-                        const efec = ((v / LOTE_STANDARD) * 100).toFixed(1);
-                        ctx.fillStyle = '#e0e6ed';
-                        ctx.font = 'bold 10px Segoe UI';
-                        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-                        ctx.fillText(`${v.toLocaleString()}m\n${efec}%`, bar.x + 6, bar.y);
-                    });
-                });
-            }
-        }]
-    });
-}
-
-/* ================================================================
-   WIRING DE EVENTOS
-   ================================================================ */
-$('loadBtn').addEventListener('click', () => $('fileInput').click());
-$('overlayBtn').addEventListener('click', () => $('fileInput').click());
-$('fileInput').addEventListener('change', e => loadFiles(e.target.files));
-
-$('dateSelect').addEventListener('change', e => {
-    state.currentDate = e.target.value;
-    render();
-});
-
-// Drag & drop
-let dragCount = 0;
-window.addEventListener('dragenter', e => {
-    e.preventDefault();
-    dragCount++;
-    $('overlay').classList.remove('hidden');
-    $('overlay').classList.add('drag');
-    $('overlayTitle').textContent = '📥 Suelta los CSVs aquí';
-});
-window.addEventListener('dragover', e => e.preventDefault());
-window.addEventListener('dragleave', e => {
-    dragCount = Math.max(0, dragCount - 1);
-    if (dragCount === 0) {
-        $('overlay').classList.remove('drag');
-        if (state.currentDate) $('overlay').classList.add('hidden');
-    }
-});
-window.addEventListener('drop', e => {
-    e.preventDefault();
-    dragCount = 0;
-    $('overlay').classList.remove('drag');
-    if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
-});
-
-/* ================================================================
-   AUTO-CARGA (solo funciona si el HTML se sirve vía http://)
-   ================================================================ */
-(async function autoFetch() {
-    const hoy = new Date();
-    const yyyymmdd =
-        `${hoy.getFullYear()}${String(hoy.getMonth()+1).padStart(2,'0')}${String(hoy.getDate()).padStart(2,'0')}`;
-    try {
-        const [r1, r2] = await Promise.all([
-            fetch(`tenido_${yyyymmdd}.csv`).then(r => r.ok ? r.text() : null).catch(() => null),
-            fetch(`tiempos_perdidos_${yyyymmdd}.csv`).then(r => r.ok ? r.text() : null).catch(() => null)
-        ]);
-        if (!r1 && !r2) return; // no hay nada que cargar (típico en file://)
-
-        if (r1) {
-            const rows = parseCSV(r1);
-            if (rows.length && !state.byDate[yyyymmdd]) state.byDate[yyyymmdd] = { produccion: [], tiempos: [] };
-            if (rows.length) state.byDate[yyyymmdd].produccion = rows;
-        }
-        if (r2) {
-            const rows = parseCSV(r2);
-            if (rows.length && !state.byDate[yyyymmdd]) state.byDate[yyyymmdd] = { produccion: [], tiempos: [] };
-            if (rows.length) state.byDate[yyyymmdd].tiempos = rows;
-        }
-
-        const fechas = Object.keys(state.byDate).sort();
-        if (fechas.length) {
-            const sel = $('dateSelect');
-            sel.innerHTML = fechas.map(f => `<option value="${f}">${formatDate(f)}</option>`).join('');
-            sel.hidden = fechas.length < 2;
-            state.currentDate = fechas[fechas.length - 1];
-            sel.value = state.currentDate;
-            $('overlay').classList.add('hidden');
-            $('updateTime').textContent = new Date().toLocaleString('es-ES');
-            render();
-        }
-    } catch (e) {
-        // Silencioso: en file:// no se puede hacer fetch, el usuario carga manual
-    }
-})();
-
-console.log('✅ Dashboard Tenido v5 listo. Esperando CSVs…');
-</script>
-</body>
-</html>
+    <!-- TAB OPERADOR -->
+    <div class="tab-content" id="tab-operador">
+        <div class="kpi-global">
+            <div class="kpi-card"><div class="kpi-label">Mts Producidos</div><div class="kpi-value blue" id="kpiOpProdMts">-</div><div class="kpi-sub">total</div></div>
+            <div class="kpi-card"><div class="kpi-label">Lotes</div><div class="kpi-value orange" id="kpiOpLotes">-</div><div class="kpi-sub">distintos</div></div>
+            <div class="kpi-card"><div class="kpi-label">% Avance</div><div class="kpi-value green" id="kpiOpAvance">-</div><div class="kpi-sub">prod / objetivo</div></div>
+            <div class="kpi-card"><div class="kpi-label">T. Productivo</div><div class="kpi-value blue" id="kpiOpTiempo">-</div><div class="kpi-sub">HH:MM</div></div>
+        </div>
+        <div class="tabla-wrapper"><table id="tablaOperador"><thead><tr>
+            <th style="text-align:left;min-width:140px;">Operario</th>
+            <th style="text-align:left;min-width:100px;">Tren</th>
+            <th>Turno</th>
+            <th>Mts Prod</th>
+            <th>Mts a Teñir</th>
+            <th>% Avance</th>
+            <th>Lotes</th>
+            <th>Tiempo</th>
+            <th>Madejas</th>
+        </tr></thead><tbody id="tbodyOper
