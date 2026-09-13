@@ -106,6 +106,7 @@
     .kpi-value.pink { color:#f06292; }
     .kpi-value.purple { color:#ce93d8; }
     .kpi-sub { font-size:.55rem; color:#78909c; margin-top:0; }
+    .kpi-sub.warn { color:#ffb74d; font-weight:600; }
 
     .maquinas-grid {
         display:grid; grid-template-columns:1fr 1fr;
@@ -139,6 +140,7 @@
     .kpi-maquina-item .value.efectividad { color:#00e676; }
     .kpi-maquina-item .value.tiempo { color:#4fc3f7; }
     .kpi-maquina-item .value.roturas { color:#f06292; }
+    .kpi-maquina-item .value.warn { color:#ffb74d; }
 
     .tabla-wrapper {
         flex:1; overflow:auto; border-radius:10px;
@@ -226,6 +228,15 @@
     .error-panel.visible { display:block; }
     .error-panel ul { margin-left:18px; margin-top:6px; }
     .error-panel li { margin-bottom:3px; color:#f8b0c0; }
+
+    .warning-panel {
+        background:#3a2f1a; border:1px solid #ffb74d;
+        border-radius:10px; padding:10px 14px;
+        color:#ffb74d; font-size:.75rem; margin-bottom:8px;
+        display:none;
+    }
+    .warning-panel.visible { display:block; }
+    .warning-panel strong { color:#ffcc80; }
 
     .com-lista { flex:1; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:8px; }
     .com-vacio { text-align:center; color:#78909c; font-size:.75rem; padding:20px 0; font-style:italic; }
@@ -344,12 +355,13 @@
     <!-- TAB TREN (Máquina) -->
     <div class="tab-content active" id="tab-maquina">
         <div class="error-panel" id="errorPanel"></div>
+        <div class="warning-panel" id="warningPanel"></div>
         <div class="kpi-global-8">
             <div class="kpi-card"><div class="kpi-label">Mts Producidos</div><div class="kpi-value blue" id="kpiProdMts">-</div><div class="kpi-sub">total día</div></div>
             <div class="kpi-card"><div class="kpi-label">Mts a Teñir</div><div class="kpi-value" id="kpiEspMts">-</div><div class="kpi-sub">objetivo</div></div>
             <div class="kpi-card"><div class="kpi-label">% Avance</div><div class="kpi-value green" id="kpiAvance">-</div><div class="kpi-sub">prod / objetivo</div></div>
             <div class="kpi-card"><div class="kpi-label">Lotes</div><div class="kpi-value orange" id="kpiLotes">-</div><div class="kpi-sub">distintos</div></div>
-            <div class="kpi-card"><div class="kpi-label">T. Productivo</div><div class="kpi-value blue" id="kpiTiempoGlobal">-</div><div class="kpi-sub">HH:MM</div></div>
+            <div class="kpi-card"><div class="kpi-label">T. Productivo</div><div class="kpi-value blue" id="kpiTiempoGlobal">-</div><div class="kpi-sub" id="kpiTiempoGlobalSub">HH:MM · unión</div></div>
             <div class="kpi-card"><div class="kpi-label">T. Perdido</div><div class="kpi-value pink" id="kpiTpTotalHoras">-</div><div class="kpi-sub">horas</div></div>
             <div class="kpi-card"><div class="kpi-label">Disponibilidad</div><div class="kpi-value green" id="kpiDisponibilidad">-</div><div class="kpi-sub">sobre 24 h</div></div>
             <div class="kpi-card"><div class="kpi-label">Efectividad</div><div class="kpi-value purple" id="kpiEfectividad">-</div><div class="kpi-sub">vs 3 turnos</div></div>
@@ -363,7 +375,7 @@
             <div class="kpi-card"><div class="kpi-label">Mts Producidos</div><div class="kpi-value blue" id="kpiOpProdMts">-</div><div class="kpi-sub">total</div></div>
             <div class="kpi-card"><div class="kpi-label">Lotes</div><div class="kpi-value orange" id="kpiOpLotes">-</div><div class="kpi-sub">distintos</div></div>
             <div class="kpi-card"><div class="kpi-label">% Avance</div><div class="kpi-value green" id="kpiOpAvance">-</div><div class="kpi-sub">prod / objetivo</div></div>
-            <div class="kpi-card"><div class="kpi-label">T. Productivo</div><div class="kpi-value blue" id="kpiOpTiempo">-</div><div class="kpi-sub">HH:MM</div></div>
+            <div class="kpi-card"><div class="kpi-label">T. Productivo</div><div class="kpi-value blue" id="kpiOpTiempo">-</div><div class="kpi-sub">unión por operario</div></div>
         </div>
         <div class="tabla-wrapper"><table id="tablaOperador"><thead><tr>
             <th style="text-align:left;min-width:140px;">Operario</th>
@@ -492,6 +504,8 @@ const API_COMENTARIO = '/api/comentario';
 /* Constantes de negocio Tenido */
 const TURNOS_POR_DIA = 3;
 const HORAS_DIA = 24;
+const MIN_DURACION_MIN = 60;              // mínimo 1h para considerar una duración "válida"
+const MAX_DURACION_MIN = HORAS_DIA * 60;  // máximo 24h por fila
 
 /* ============================================================
    ESTADO
@@ -502,6 +516,7 @@ let produccionData = [];
 let fechasDisponibles = [];
 let comentariosCache = [];
 let comentariosCargados = false;
+let avisosDuracion = [];   // filas con duración corregida o anómala
 
 /* ============================================================
    HELPERS
@@ -520,7 +535,6 @@ function fechaAString(d) {
     return `${y}${m}${dia}`;
 }
 
-/* Detecta separador: ; o , */
 function detectarSeparador(linea) {
     const nSemi = (linea.match(/;/g)||[]).length;
     const nComa = (linea.match(/,/g)||[]).length;
@@ -529,40 +543,23 @@ function detectarSeparador(linea) {
 
 /* ============================================================
    PARSER CSV ROBUSTO
-   ============================================================
-   Soporta:
-   - BOM al inicio del archivo
-   - Separador automático ( , o ; )
-   - Comillas dobles escapadas ("")
-   - Comas dentro de comillas
-   - 🔧 FILAS ENVUELTAS EN COMILLAS EXTERNAS
-     Ej: "20260825,1,...,05:59"  →  20260825,1,...,05:59
    ============================================================ */
 function parseCSV(text) {
     if (!text) return [];
-
-    // 1) Limpiar BOM del inicio
     text = text.replace(/^\uFEFF+/, '');
-
-    // 2) Dividir en líneas
     let lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
     if (lines.length < 2) return [];
 
-    // 3) 🔧 Limpiar comillas externas que envuelven toda la fila
-    //    (solo si la línea empieza Y termina con " y contiene comas)
     lines = lines.map(l => {
         const t = l.trim();
         if (t.length > 1 && t.startsWith('"') && t.endsWith('"') && t.includes(',')) {
-            // Quita las comillas externas y des-escala "" → "
             return t.slice(1, -1).replace(/""/g, '"');
         }
         return l;
     });
 
-    // 4) Detectar separador
     const delim = detectarSeparador(lines[0]);
 
-    // 5) Parseo por línea
     const parseLinea = (linea) => {
         const out = [];
         let cur = '', inQ = false;
@@ -583,7 +580,6 @@ function parseCSV(text) {
         return out.map(v => v.trim().replace(/^\uFEFF+/, ''));
     };
 
-    // 6) Cabeceras + filas
     const headers = parseLinea(lines[0]);
     const result = [];
     for (let i = 1; i < lines.length; i++) {
@@ -595,7 +591,6 @@ function parseCSV(text) {
     return result;
 }
 
-/* Convierte "5,98" o "5.98" a 5.98 */
 function num(v) {
     if (v === null || v === undefined) return 0;
     if (typeof v === 'number') return v;
@@ -604,13 +599,11 @@ function num(v) {
     return isNaN(n) ? 0 : n;
 }
 
-/* Convierte "20260825" a Date a medianoche local */
 function fechaDesdeYYYYMMDD(s) {
     if (!s || s.length !== 8) return null;
     return new Date(parseInt(s.slice(0,4)), parseInt(s.slice(4,6))-1, parseInt(s.slice(6,8)));
 }
 
-/* Convierte "25/08/26" o "25/08/2026" a Date */
 function fechaCortaAObj(s) {
     if (!s) return null;
     const p = s.split('/');
@@ -621,18 +614,111 @@ function fechaCortaAObj(s) {
     return new Date(anio, mes, dia);
 }
 
-/* Duración en minutos entre inicio y fin */
-function calcularDuracion(fechaInicioYYYYMMDD, horaInicio, fechaFinCorta, horaFin) {
+/* ============================================================
+   CAMBIO 1: Normalización de duración
+   - Si duración > 24h y restar 1 día al fin da algo entre 0 y 24h
+     → se corrige (asume que el fin era del mismo día)
+   - Si aún > 24h → se marca como "anómala" y se recorta a 24h
+   Devuelve: { ini: Date, fin: Date, min: number, corregida: bool, anomala: bool }
+   ============================================================ */
+function normalizarIntervalo(fechaInicioYYYYMMDD, horaInicio, fechaFinCorta, horaFin, idx) {
     const fIni = fechaDesdeYYYYMMDD(fechaInicioYYYYMMDD);
     const fFin = fechaCortaAObj(fechaFinCorta);
-    if (!fIni || !fFin) return 0;
+    if (!fIni || !fFin) {
+        return { ini: null, fin: null, min: 0, corregida: false, anomala: false };
+    }
+
     const [hI, mI] = (horaInicio||'00:00').split(':').map(Number);
     const [hF, mF] = (horaFin||'00:00').split(':').map(Number);
+
     const dIni = new Date(fIni.getFullYear(), fIni.getMonth(), fIni.getDate(), hI||0, mI||0);
-    const dFin = new Date(fFin.getFullYear(), fFin.getMonth(), fFin.getDate(), hF||0, mF||0);
+    let dFin = new Date(fFin.getFullYear(), fFin.getMonth(), fFin.getDate(), hF||0, mF||0);
+
     let min = Math.round((dFin - dIni) / 60000);
-    if (min < 0) min = 0;
-    return min;
+    let corregida = false;
+    let anomala = false;
+
+    // Si es negativa, la marcamos como anómala con duración 0
+    if (min < 0) {
+        return { ini: dIni, fin: dIni, min: 0, corregida: false, anomala: true };
+    }
+
+    // Si > 24h, probamos restar 1 día al fin
+    if (min > MAX_DURACION_MIN) {
+        const dFinAlt = new Date(dFin);
+        dFinAlt.setDate(dFinAlt.getDate() - 1);
+        const minAlt = Math.round((dFinAlt - dIni) / 60000);
+        if (minAlt >= 0 && minAlt <= MAX_DURACION_MIN) {
+            // Corrección plausible
+            dFin = dFinAlt;
+            min = minAlt;
+            corregida = true;
+            avisosDuracion.push({
+                idx, motivo: 'Duración corregida restando 1 día al fin',
+                original: Math.round((dFinAlt - dIni) / 60000),  // no exacto pero informativo
+                nuevo: minAlt
+            });
+        } else {
+            // Aún > 24h → anómala, recortamos a 24h
+            min = MAX_DURACION_MIN;
+            anomala = true;
+            avisosDuracion.push({
+                idx, motivo: 'Duración > 24h no corregible, recortada a 24h',
+                original: '>24h', nuevo: MAX_DURACION_MIN
+            });
+        }
+    }
+
+    return { ini: dIni, fin: dFin, min, corregida, anomala };
+}
+
+/* ============================================================
+   CAMBIO 2: Intervalo unión
+   Fusiona todos los intervalos solapados y devuelve minutos totales
+   ============================================================ */
+function calcularIntervaloUnion(intervalos) {
+    if (!intervalos.length) return { totalMin: 0, bloques: [] };
+    const ordenados = [...intervalos].sort((a, b) => a.ini - b.ini);
+    const bloques = [];
+    let ini = ordenados[0].ini;
+    let fin = ordenados[0].fin;
+
+    for (let i = 1; i < ordenados.length; i++) {
+        const it = ordenados[i];
+        if (it.ini <= fin) {
+            // Solapamiento o contigüidad
+            fin = new Date(Math.max(fin.getTime(), it.fin.getTime()));
+        } else {
+            bloques.push({ ini, fin });
+            ini = it.ini;
+            fin = it.fin;
+        }
+    }
+    bloques.push({ ini, fin });
+
+    let totalMin = 0;
+    bloques.forEach(b => {
+        totalMin += Math.round((b.fin - b.ini) / 60000);
+    });
+
+    return { totalMin, bloques };
+}
+
+/* ============================================================
+   CAMBIO 3: Huecos
+   Dado el intervalo unión y los tiempos perdidos, calcula:
+   - Tiempo entre primera y última carga (ventana total)
+   - Huecos = ventana - unión
+   ============================================================ */
+function calcularHuecos(intervalos, union) {
+    if (!intervalos.length || !union.bloques.length) {
+        return { ventanaMin: 0, huecosMin: 0 };
+    }
+    const minIni = new Date(Math.min(...intervalos.map(i => i.ini.getTime())));
+    const maxFin = new Date(Math.max(...intervalos.map(i => i.fin.getTime())));
+    const ventanaMin = Math.round((maxFin - minIni) / 60000);
+    const huecosMin = Math.max(0, ventanaMin - union.totalMin);
+    return { ventanaMin, huecosMin };
 }
 
 function formatTiempoHHMM(minutos) {
@@ -647,7 +733,7 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
-   DESCUBRIMIENTO DE FECHAS (HEAD requests)
+   DESCUBRIMIENTO DE FECHAS
    ============================================================ */
 async function existeArchivo(url) {
     try {
@@ -686,19 +772,26 @@ async function descubrirFechas() {
    ============================================================ */
 function validarProduccion(rows) {
     const requeridas = ['fecha','Maquina','Hora Inicio','Turno','Persona','Estilo','Hilo','Lote','Nº Madeja','Metros a Teñir','Metros Producidos','fecha fin','fecha fin_hora'];
-    const faltantes = requeridas.filter(c => !(c in (rows[0]||{})));
-    return faltantes;
+    return requeridas.filter(c => !(c in (rows[0]||{})));
 }
 function validarTiempos(rows) {
     const requeridas = ['Fecha','Maquina','Causa','Horas','% Tiempo Perdido'];
-    const faltantes = requeridas.filter(c => !(c in (rows[0]||{})));
-    return faltantes;
+    return requeridas.filter(c => !(c in (rows[0]||{})));
 }
 function mostrarErrores(errores) {
     const panel = $('errorPanel');
     if (!errores.length) { panel.classList.remove('visible'); panel.innerHTML=''; return; }
     panel.innerHTML = '<strong>⚠️ Problemas al cargar los CSV:</strong><ul>' +
         errores.map(e => `<li>${escapeHtml(e)}</li>`).join('') + '</ul>';
+    panel.classList.add('visible');
+}
+function mostrarAvisosDuracion() {
+    const panel = $('warningPanel');
+    if (!avisosDuracion.length) { panel.classList.remove('visible'); panel.innerHTML=''; return; }
+    const items = avisosDuracion.map(a =>
+        `<li>Fila ${a.idx + 2}: ${a.motivo}</li>`
+    ).join('');
+    panel.innerHTML = `<strong>ℹ️ Ajustes de duración aplicados:</strong><ul>${items}</ul>`;
     panel.classList.add('visible');
 }
 
@@ -715,9 +808,9 @@ async function cargarCSV(url) {
 
 async function cargarFecha(fecha) {
     const errores = [];
+    avisosDuracion = [];
     $('fileStatus').textContent = `Cargando ${formatearFecha(fecha)}…`;
 
-    // Producción (obligatorio)
     try {
         produccionRaw = await cargarCSV(`${DATA_PATH}${PREFIJO_PRODUCCION}${fecha}${EXT}`);
         const faltantes = validarProduccion(produccionRaw);
@@ -728,7 +821,6 @@ async function cargarFecha(fecha) {
         produccionRaw = [];
     }
 
-    // Tiempos perdidos (opcional)
     try {
         tiemposData = await cargarCSV(`${DATA_PATH}${PREFIJO_TIEMPOS}${fecha}${EXT}`);
         const faltantes = validarTiempos(tiemposData);
@@ -742,6 +834,7 @@ async function cargarFecha(fecha) {
 
     procesarDatos();
     mostrarErrores(errores);
+    mostrarAvisosDuracion();
     render(fecha);
 }
 
@@ -749,12 +842,14 @@ async function cargarFecha(fecha) {
    PROCESAMIENTO
    ============================================================ */
 function procesarDatos() {
-    produccionData = produccionRaw.map(p => {
+    produccionData = produccionRaw.map((p, idx) => {
         const metrosProd = num(p['Metros Producidos']);
         const metrosTeñir = num(p['Metros a Teñir']);
         const hilo = num(p['Hilo']);
         const madejas = num(p['Nº Madeja']);
-        const duracion = calcularDuracion(p['fecha'], p['Hora Inicio'], p['fecha fin'], p['fecha fin_hora']);
+        const intervalo = normalizarIntervalo(
+            p['fecha'], p['Hora Inicio'], p['fecha fin'], p['fecha fin_hora'], idx
+        );
 
         return {
             fecha: p['fecha'] || '',
@@ -770,19 +865,29 @@ function procesarDatos() {
             metros_producidos: metrosProd,
             fecha_fin: p['fecha fin'] || '',
             hora_fin: p['fecha fin_hora'] || '',
-            duracion_minutos: duracion
+            duracion_minutos: intervalo.min,
+            intervalo: intervalo,
+            corregida: intervalo.corregida,
+            anomala: intervalo.anomala
         };
     });
 }
 
 /* ============================================================
-   CÁLCULO DE MÉTRICAS GLOBALES (8 KPIs)
+   CÁLCULO DE MÉTRICAS GLOBALES
    ============================================================ */
 function calcularGlobales(data, tiempos) {
     const totalProd = data.reduce((s,d) => s + d.metros_producidos, 0);
     const totalTeñir = data.reduce((s,d) => s + d.metros_a_teñir, 0);
     const lotes = new Set(data.map(d => d.lote).filter(Boolean));
-    const totalTiempo = data.reduce((s,d) => s + d.duracion_minutos, 0);
+
+    // T. Productivo = intervalo unión de todas las cargas
+    const intervalos = data
+        .filter(d => d.intervalo && d.intervalo.ini && d.intervalo.fin)
+        .map(d => ({ ini: d.intervalo.ini, fin: d.intervalo.fin }));
+    const union = calcularIntervaloUnion(intervalos);
+    const huecos = calcularHuecos(intervalos, union);
+
     const totalHorasPerdidas = tiempos.reduce((s,t) => s + num(t['Horas']), 0);
     const horasProductivas = Math.max(HORAS_DIA - totalHorasPerdidas, 0);
     const disponibilidad = (horasProductivas / HORAS_DIA) * 100;
@@ -792,7 +897,10 @@ function calcularGlobales(data, tiempos) {
     return {
         totalProd, totalTeñir,
         lotes: lotes.size,
-        totalTiempo,
+        totalTiempo: union.totalMin,
+        bloques: union.bloques,
+        ventanaMin: huecos.ventanaMin,
+        huecosMin: huecos.huecosMin,
         totalHorasPerdidas,
         horasProductivas,
         disponibilidad,
@@ -812,12 +920,12 @@ function render(fecha) {
 
     const g = calcularGlobales(data, tiempos);
 
-    // KPIs cabecera (8)
     $('kpiProdMts').textContent = g.totalProd.toLocaleString();
     $('kpiEspMts').textContent = g.totalTeñir.toLocaleString();
     $('kpiAvance').textContent = g.avance.toFixed(1) + '%';
     $('kpiLotes').textContent = g.lotes;
     $('kpiTiempoGlobal').textContent = formatTiempoHHMM(g.totalTiempo);
+    $('kpiTiempoGlobalSub').textContent = `HH:MM · unión · huecos ${formatTiempoHHMM(g.huecosMin)}`;
     $('kpiTpTotalHoras').textContent = g.totalHorasPerdidas.toFixed(2) + 'h';
     $('kpiDisponibilidad').textContent = g.disponibilidad.toFixed(1) + '%';
     $('kpiEfectividad').textContent = g.efectividad.toFixed(1) + '%';
@@ -829,7 +937,7 @@ function render(fecha) {
     renderComentarios(fecha);
 }
 
-/* ---------- Trenes (pestaña "Tren") ---------- */
+/* ---------- Trenes ---------- */
 function renderTrenes(data, tiempos) {
     const grid = $('maquinaGrid');
     if (!data.length) {
@@ -844,16 +952,27 @@ function renderTrenes(data, tiempos) {
         const prod = items.reduce((s,d) => s + d.metros_producidos, 0);
         const teñir = items.reduce((s,d) => s + d.metros_a_teñir, 0);
         const lotes = new Set(items.map(d => d.lote).filter(Boolean)).size;
-        const tiempo = items.reduce((s,d) => s + d.duracion_minutos, 0);
         const horasPerd = tItems.reduce((s,t) => s + num(t['Horas']), 0);
         const madejas = items.length;
         const avance = teñir > 0 ? (prod/teñir)*100 : 0;
         const efectividad = teñir > 0 ? (prod/(TURNOS_POR_DIA*teñir))*100 : 0;
 
+        // Intervalo unión por tren
+        const intervalos = items
+            .filter(d => d.intervalo && d.intervalo.ini && d.intervalo.fin)
+            .map(d => ({ ini: d.intervalo.ini, fin: d.intervalo.fin }));
+        const union = calcularIntervaloUnion(intervalos);
+        const huecos = calcularHuecos(intervalos, union);
+
+        // ¿Hay filas corregidas o anómalas?
+        const corregidas = items.filter(d => d.corregida).length;
+        const anomalas = items.filter(d => d.anomala).length;
+        const flagDuracion = anomalas > 0 ? '⚠️' : (corregidas > 0 ? 'ℹ️' : '');
+
         html += `<div class="maquina-block">
             <div class="maquina-header">
                 <h3>${idx===0?'🔵':'🟢'} ${tren}</h3>
-                <span class="total-badge">${formatTiempoHHMM(tiempo)}</span>
+                <span class="total-badge">${formatTiempoHHMM(union.totalMin)}</span>
             </div>
             <div class="kpi-maquina-grid">
                 <div class="kpi-maquina-item"><span class="label">Mts Producidos</span><span class="value">${prod.toLocaleString()}</span></div>
@@ -862,8 +981,10 @@ function renderTrenes(data, tiempos) {
                 <div class="kpi-maquina-item"><span class="label">Efectividad</span><span class="value efectividad">${efectividad.toFixed(1)}%</span></div>
                 <div class="kpi-maquina-item"><span class="label">Lotes</span><span class="value">${lotes}</span></div>
                 <div class="kpi-maquina-item"><span class="label">Cargas</span><span class="value">${madejas}</span></div>
-                <div class="kpi-maquina-item"><span class="label">T. Productivo</span><span class="value tiempo">${formatTiempoHHMM(tiempo)}</span></div>
+                <div class="kpi-maquina-item"><span class="label">T. Productivo</span><span class="value tiempo">${formatTiempoHHMM(union.totalMin)} ${flagDuracion}</span></div>
+                <div class="kpi-maquina-item"><span class="label">Huecos</span><span class="value tiempo">${formatTiempoHHMM(huecos.huecosMin)}</span></div>
                 <div class="kpi-maquina-item"><span class="label">T. Perdido</span><span class="value roturas">${horasPerd.toFixed(2)}h</span></div>
+                <div class="kpi-maquina-item"><span class="label">Ventana total</span><span class="value">${formatTiempoHHMM(huecos.ventanaMin)}</span></div>
             </div>
         </div>`;
     });
@@ -880,21 +1001,28 @@ function renderOperador(data) {
     }
     const porOp = {};
     data.forEach(d => {
-        if (!porOp[d.persona]) porOp[d.persona] = { prod:0, teñir:0, lotes:new Set(), tiempo:0, madejas:0, trenes:new Set(), turnos:new Set() };
+        if (!porOp[d.persona]) porOp[d.persona] = {
+            prod:0, teñir:0, lotes:new Set(), madejas:0,
+            trenes:new Set(), turnos:new Set(),
+            intervalos: []
+        };
         const o = porOp[d.persona];
         o.prod += d.metros_producidos;
         o.teñir += d.metros_a_teñir;
         if (d.lote) o.lotes.add(d.lote);
-        o.tiempo += d.duracion_minutos;
         o.madejas += d.madejas;
         if (d.maquina) o.trenes.add(d.maquina);
         if (d.turno) o.turnos.add(d.turno);
+        if (d.intervalo && d.intervalo.ini && d.intervalo.fin) {
+            o.intervalos.push({ ini: d.intervalo.ini, fin: d.intervalo.fin });
+        }
     });
 
     let html = '';
     const entries = Object.entries(porOp).sort((a,b) => b[1].prod - a[1].prod);
     entries.forEach(([op, o]) => {
         const avance = o.teñir > 0 ? (o.prod/o.teñir)*100 : 0;
+        const union = calcularIntervaloUnion(o.intervalos);
         html += `<tr>
             <td class="nombre-col">${escapeHtml(op)}</td>
             <td class="maquina-col">${[...o.trenes].join(', ')}</td>
@@ -903,7 +1031,7 @@ function renderOperador(data) {
             <td>${o.teñir.toLocaleString()}</td>
             <td style="color:#00e676;font-weight:700;">${avance.toFixed(1)}%</td>
             <td>${o.lotes.size}</td>
-            <td style="color:#4fc3f7;">${formatTiempoHHMM(o.tiempo)}</td>
+            <td style="color:#4fc3f7;">${formatTiempoHHMM(union.totalMin)}</td>
             <td>${o.madejas}</td>
         </tr>`;
     });
@@ -912,11 +1040,15 @@ function renderOperador(data) {
     const totalProd = entries.reduce((s,[_,o]) => s + o.prod, 0);
     const totalTeñir = entries.reduce((s,[_,o]) => s + o.teñir, 0);
     const totalLotes = new Set(data.map(d => d.lote).filter(Boolean)).size;
-    const totalTiempo = data.reduce((s,d) => s + d.duracion_minutos, 0);
+    const todosIntervalos = data
+        .filter(d => d.intervalo && d.intervalo.ini && d.intervalo.fin)
+        .map(d => ({ ini: d.intervalo.ini, fin: d.intervalo.fin }));
+    const unionGlobal = calcularIntervaloUnion(todosIntervalos);
+
     $('kpiOpProdMts').textContent = totalProd.toLocaleString();
     $('kpiOpLotes').textContent = totalLotes;
     $('kpiOpAvance').textContent = totalTeñir > 0 ? ((totalProd/totalTeñir)*100).toFixed(1) + '%' : '-';
-    $('kpiOpTiempo').textContent = formatTiempoHHMM(totalTiempo);
+    $('kpiOpTiempo').textContent = formatTiempoHHMM(unionGlobal.totalMin);
 }
 
 /* ---------- Estilo ---------- */
@@ -930,19 +1062,22 @@ function renderEstilo(data) {
     const porEstilo = {};
     data.forEach(d => {
         const key = `${d.estilo}|${d.hilo}`;
-        if (!porEstilo[key]) porEstilo[key] = { estilo:d.estilo, hilo:d.hilo, prod:0, teñir:0, lotes:new Set(), turnos:new Set(), tiempo:0 };
+        if (!porEstilo[key]) porEstilo[key] = { estilo:d.estilo, hilo:d.hilo, prod:0, teñir:0, lotes:new Set(), turnos:new Set(), intervalos: [] };
         const e = porEstilo[key];
         e.prod += d.metros_producidos;
         e.teñir += d.metros_a_teñir;
         if (d.lote) e.lotes.add(d.lote);
         if (d.turno) e.turnos.add(d.turno);
-        e.tiempo += d.duracion_minutos;
+        if (d.intervalo && d.intervalo.ini && d.intervalo.fin) {
+            e.intervalos.push({ ini: d.intervalo.ini, fin: d.intervalo.fin });
+        }
     });
 
     let html = '';
     const entries = Object.values(porEstilo).sort((a,b) => b.prod - a.prod);
     entries.forEach(e => {
         const avance = e.teñir > 0 ? (e.prod/e.teñir)*100 : 0;
+        const union = calcularIntervaloUnion(e.intervalos);
         html += `<tr>
             <td class="nombre-col">${escapeHtml(e.estilo)}</td>
             <td>${e.hilo}</td>
@@ -951,7 +1086,7 @@ function renderEstilo(data) {
             <td style="color:#00e676;font-weight:700;">${avance.toFixed(1)}%</td>
             <td>${e.lotes.size}</td>
             <td>${[...e.turnos].join(', ')}</td>
-            <td style="color:#4fc3f7;">${formatTiempoHHMM(e.tiempo)}</td>
+            <td style="color:#4fc3f7;">${formatTiempoHHMM(union.totalMin)}</td>
         </tr>`;
     });
     tbody.innerHTML = html;
