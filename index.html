@@ -163,6 +163,36 @@
     .tabla-wrapper .nombre-col { font-weight:600; color:#4fc3f7; text-align:left; }
     .tabla-wrapper .maquina-col { text-align:left; font-weight:500; color:#90aae4; }
 
+
+
+.estado-badge {
+    display:inline-block; padding:2px 10px; border-radius:30px;
+    font-size:.65rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.03em;
+}
+.estado-badge.pendiente { background:#3a2f1a; color:#ffb74d; }
+.estado-badge.parcial   { background:#3a2f1a; color:#ffb74d; }
+.estado-badge.completo  { background:#1b3a2b; color:#00e676; }
+.estado-badge.excedido  { background:#1b2a3a; color:#4fc3f7; }
+
+.barra-avance {
+    display:inline-block; height:6px; border-radius:3px;
+    background:#4fc3f7; vertical-align:middle;
+    width:0;
+    transition: width .3s;
+}
+.barra-wrapper {
+    display:flex; align-items:center; gap:6px;
+}
+.barra-wrapper .barra-track {
+    flex:1; height:6px; border-radius:3px;
+    background:#142230; overflow:hidden;
+}
+
+
+
+
+
     .roturas-grid {
         display:grid; grid-template-columns:1fr 1fr;
         gap:10px; flex:1; min-height:0;
@@ -348,6 +378,7 @@
         <button class="tab-btn active" data-tab="maquina">🏭 Tren</button>
         <button class="tab-btn" data-tab="operador">👤 Operador</button>
         <button class="tab-btn" data-tab="titulo">📌 Estilo</button>
+	<button class="tab-btn" data-tab="lote">📦 Lote</button>
         <button class="tab-btn" data-tab="tiempos">⏱️ Tiempos</button>
         <button class="tab-btn" data-tab="comentarios">💬 Comentarios</button>
     </div>
@@ -409,6 +440,47 @@
             <th>Tiempo</th>
         </tr></thead><tbody id="tbodyTitulo"></tbody></table></div>
     </div>
+
+
+
+<!-- TAB LOTE -->
+<div class="tab-content" id="tab-lote">
+    <div class="kpi-global">
+        <div class="kpi-card"><div class="kpi-label">Mts Producidos</div><div class="kpi-value blue" id="kpiLoteProdMts">-</div><div class="kpi-sub">total</div></div>
+        <div class="kpi-card"><div class="kpi-label">Mts a Teñir</div><div class="kpi-value" id="kpiLoteEspMts">-</div><div class="kpi-sub">objetivo</div></div>
+        <div class="kpi-card"><div class="kpi-label">Lotes Totales</div><div class="kpi-value orange" id="kpiLoteTotal">-</div><div class="kpi-sub">distintos</div></div>
+        <div class="kpi-card"><div class="kpi-label">% Avance Global</div><div class="kpi-value green" id="kpiLoteAvance">-</div><div class="kpi-sub">prod / objetivo</div></div>
+    </div>
+    <div class="tabla-wrapper">
+        <table id="tablaLote">
+            <thead>
+                <tr>
+                    <th style="text-align:left;min-width:90px;">Lote</th>
+                    <th style="text-align:left;min-width:110px;">Estilo</th>
+                    <th>Hilo</th>
+                    <th>Tren(es)</th>
+                    <th>Turnos</th>
+                    <th style="text-align:left;min-width:130px;">Operarios</th>
+                    <th>Mts Prod</th>
+                    <th>Mts a Teñir</th>
+                    <th>% Avance</th>
+                    <th>Madejas</th>
+                    <th>Estado</th>
+                    <th>Inicio → Fin</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyLote"></tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+
+
+
+
 
     <!-- TAB TIEMPOS -->
     <div class="tab-content" id="tab-tiempos">
@@ -933,6 +1005,7 @@ function render(fecha) {
     renderTrenes(data, tiempos);
     renderOperador(data);
     renderEstilo(data);
+	renderLote(data); 
     renderTiempos(tiempos);
     renderComentarios(fecha);
 }
@@ -1099,6 +1172,138 @@ function renderEstilo(data) {
     $('kpiTitLotes').textContent = totalLotes;
     $('kpiTitAvance').textContent = totalTeñir > 0 ? ((totalProd/totalTeñir)*100).toFixed(1) + '%' : '-';
 }
+
+
+
+
+/* ---------- Lote ---------- */
+function renderLote(data) {
+    const tbody = $('tbodyLote');
+    if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:30px;color:#78909c;">Sin datos</td></tr>`;
+        ['kpiLoteProdMts','kpiLoteEspMts','kpiLoteTotal','kpiLoteAvance'].forEach(id => $(id).textContent = '-');
+        return;
+    }
+
+    // Agrupar por lote
+    const porLote = {};
+    data.forEach(d => {
+        const lote = d.lote || '—';
+        if (!porLote[lote]) porLote[lote] = {
+            lote,
+            estilos: new Set(),
+            hilos: new Set(),
+            trenes: new Set(),
+            turnos: new Set(),
+            operarios: new Set(),
+            prod: 0,
+            teñir: 0,
+            madejas: 0,
+            intervalos: [],
+            primerasHoras: [],
+        };
+        const l = porLote[lote];
+        if (d.estilo) l.estilos.add(d.estilo);
+        if (d.hilo) l.hilos.add(d.hilo);
+        if (d.maquina) l.trenes.add(d.maquina);
+        if (d.turno) l.turnos.add(d.turno);
+        if (d.persona) l.operarios.add(d.persona);
+        l.prod += d.metros_producidos;
+        l.teñir += d.metros_a_teñir;
+        l.madejas += d.madejas;
+        if (d.intervalo && d.intervalo.ini && d.intervalo.fin) {
+            l.intervalos.push({ ini: d.intervalo.ini, fin: d.intervalo.fin });
+        }
+        if (d.hora_inicio) l.primerasHoras.push(d.hora_inicio);
+    });
+
+    // Construir filas
+    const filas = Object.values(porLote).map(l => {
+        const avance = l.teñir > 0 ? (l.prod / l.teñir) * 100 : 0;
+        let estado = 'pendiente';
+        let estadoTxt = 'Pendiente';
+        if (l.prod >= l.teñir && l.teñir > 0) {
+            if (l.prod > l.teñir * 1.05) {
+                estado = 'excedido';
+                estadoTxt = 'Excedido';
+            } else {
+                estado = 'completo';
+                estadoTxt = 'Completo';
+            }
+        } else if (l.prod > 0) {
+            estado = 'parcial';
+            estadoTxt = 'Parcial';
+        }
+
+        // Intervalos → hora inicio y fin
+        let inicioTxt = '—', finTxt = '—';
+        if (l.intervalos.length) {
+            const minIni = new Date(Math.min(...l.intervalos.map(i => i.ini.getTime())));
+            const maxFin = new Date(Math.max(...l.intervalos.map(i => i.fin.getTime())));
+            inicioTxt = minIni.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            finTxt = maxFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            // Si cruza medianoche
+            if (maxFin.getDate() !== minIni.getDate()) {
+                finTxt += ' (+1)';
+            }
+        }
+
+        return {
+            ...l,
+            estiloTxt: [...l.estilos].join(', ') || '—',
+            hiloTxt: [...l.hilos].join(', ') || '—',
+            trenesTxt: [...l.trenes].sort().join(', ') || '—',
+            turnosTxt: [...l.turnos].join(', ') || '—',
+            operariosTxt: [...l.operarios].sort().join(', ') || '—',
+            avance,
+            estado,
+            estadoTxt,
+            inicioTxt,
+            finTxt,
+        };
+    });
+
+    // Ordenar por % avance descendente
+    filas.sort((a, b) => b.avance - a.avance);
+
+    let html = '';
+    filas.forEach(f => {
+        const barW = Math.min(f.avance, 100);
+        html += `<tr>
+            <td class="nombre-col">${escapeHtml(f.lote)}</td>
+            <td>${escapeHtml(f.estiloTxt)}</td>
+            <td>${escapeHtml(f.hiloTxt)}</td>
+            <td class="maquina-col">${escapeHtml(f.trenesTxt)}</td>
+            <td>${escapeHtml(f.turnosTxt)}</td>
+            <td style="text-align:left;">${escapeHtml(f.operariosTxt)}</td>
+            <td>${f.prod.toLocaleString()}</td>
+            <td>${f.teñir.toLocaleString()}</td>
+            <td>
+                <div class="barra-wrapper">
+                    <div class="barra-track">
+                        <div class="barra-avance" style="width:${barW}%;"></div>
+                    </div>
+                    <span style="font-weight:700;color:#00e676;">${f.avance.toFixed(1)}%</span>
+                </div>
+            </td>
+            <td>${f.madejas}</td>
+            <td><span class="estado-badge ${f.estado}">${f.estadoTxt}</span></td>
+            <td style="font-size:.7rem;">${f.inicioTxt} → ${f.finTxt}</td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+
+    // KPIs globales
+    const totalProd = filas.reduce((s, f) => s + f.prod, 0);
+    const totalTeñir = filas.reduce((s, f) => s + f.teñir, 0);
+    $('kpiLoteProdMts').textContent = totalProd.toLocaleString();
+    $('kpiLoteEspMts').textContent = totalTeñir.toLocaleString();
+    $('kpiLoteTotal').textContent = filas.length;
+    $('kpiLoteAvance').textContent = totalTeñir > 0 ? ((totalProd / totalTeñir) * 100).toFixed(1) + '%' : '-';
+}
+
+
+
 
 /* ---------- Tiempos Perdidos ---------- */
 function renderTiempos(tiempos) {
