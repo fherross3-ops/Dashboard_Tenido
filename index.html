@@ -314,7 +314,7 @@
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <div class="loading-text" id="loadingText">Iniciando dashboard…</div>
-    <div class="loading-sub" id="loadingSub">Leyendo data/index.json</div>
+    <div class="loading-sub" id="loadingSub">Buscando fechas disponibles…</div>
 </div>
 
 <div class="dashboard">
@@ -527,14 +527,42 @@ function detectarSeparador(linea) {
     return nSemi > nComa ? ';' : ',';
 }
 
-/* Parser CSV robusto: respeta comillas, detecta separador, BOM */
+/* ============================================================
+   PARSER CSV ROBUSTO
+   ============================================================
+   Soporta:
+   - BOM al inicio del archivo
+   - Separador automático ( , o ; )
+   - Comillas dobles escapadas ("")
+   - Comas dentro de comillas
+   - 🔧 FILAS ENVUELTAS EN COMILLAS EXTERNAS
+     Ej: "20260825,1,...,05:59"  →  20260825,1,...,05:59
+   ============================================================ */
 function parseCSV(text) {
     if (!text) return [];
-    text = text.replace(/^\uFEFF/, '');
-    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+
+    // 1) Limpiar BOM del inicio
+    text = text.replace(/^\uFEFF+/, '');
+
+    // 2) Dividir en líneas
+    let lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
     if (lines.length < 2) return [];
+
+    // 3) 🔧 Limpiar comillas externas que envuelven toda la fila
+    //    (solo si la línea empieza Y termina con " y contiene comas)
+    lines = lines.map(l => {
+        const t = l.trim();
+        if (t.length > 1 && t.startsWith('"') && t.endsWith('"') && t.includes(',')) {
+            // Quita las comillas externas y des-escala "" → "
+            return t.slice(1, -1).replace(/""/g, '"');
+        }
+        return l;
+    });
+
+    // 4) Detectar separador
     const delim = detectarSeparador(lines[0]);
 
+    // 5) Parseo por línea
     const parseLinea = (linea) => {
         const out = [];
         let cur = '', inQ = false;
@@ -552,9 +580,10 @@ function parseCSV(text) {
             }
         }
         out.push(cur);
-        return out.map(v => v.trim());
+        return out.map(v => v.trim().replace(/^\uFEFF+/, ''));
     };
 
+    // 6) Cabeceras + filas
     const headers = parseLinea(lines[0]);
     const result = [];
     for (let i = 1; i < lines.length; i++) {
@@ -679,7 +708,9 @@ function mostrarErrores(errores) {
 async function cargarCSV(url) {
     const r = await fetch(url, { cache:'no-store' });
     if (!r.ok) throw new Error(`HTTP ${r.status} en ${url}`);
-    return parseCSV(await r.text());
+    const texto = await r.text();
+    if (!texto || texto.trim().length === 0) throw new Error(`Archivo vacío: ${url}`);
+    return parseCSV(texto);
 }
 
 async function cargarFecha(fecha) {
@@ -878,7 +909,6 @@ function renderOperador(data) {
     });
     tbody.innerHTML = html;
 
-    // KPIs globales de operador
     const totalProd = entries.reduce((s,[_,o]) => s + o.prod, 0);
     const totalTeñir = entries.reduce((s,[_,o]) => s + o.teñir, 0);
     const totalLotes = new Set(data.map(d => d.lote).filter(Boolean)).size;
@@ -958,7 +988,6 @@ function renderTiempos(tiempos) {
     $('kpiTpTopCausa').textContent = topCausa;
     $('kpiTpTopCausaCant').textContent = topHoras > 0 ? `${topHoras.toFixed(2)} h (${(topHoras/totalHoras*100).toFixed(1)}%)` : '';
 
-    // Bloques por tren
     const trenes = [...new Set(tiempos.map(t => t['Maquina']))].sort();
     let html = '';
     trenes.forEach((tren, idx) => {
@@ -1051,7 +1080,6 @@ function renderComentarios(fecha) {
         $('kpiComUltimoSub').textContent = '';
     }
 
-    // Filtros
     const fCat = $('comFiltroCat').value;
     const fBus = $('comBuscar').value.toLowerCase().trim();
     let filtrados = delDia;
@@ -1096,7 +1124,7 @@ $('formComentario').addEventListener('submit', async (e) => {
         nombre: $('comNombre').value.trim() || 'Anónimo',
         categoria: $('comCategoria').value,
         maquina: $('comMaquina').value,
-        comentario: $('comTexto').value.trim()
+        comentario: $('comTexto').value.trim().replace(/[\r\n]+/g, ' ')
     };
     if (!payload.comentario) { $('comEstado').textContent = '⚠️ Vacío'; return; }
 
