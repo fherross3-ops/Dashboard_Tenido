@@ -1,2 +1,5 @@
-﻿"fecha","#","ID","Nº","Maquina","Hora Inicio","Turno","Persona","Estilo","Hilo","Lote","Lote 2","Nº Madeja","Metros a Teñir","Metros Producidos","fecha fin","fecha fin_hora"
-"20260826","1","509433","507221","TENIDO TREN 02","06:01","Primer Turno","""ABIEZER,""","GONZALEZ INDIGO SOFT","346","402180","0","12","16700","11100","26/08/26","14:00"
+﻿fecha,#,ID,Nº,Maquina,Hora Inicio,Turno,Persona,Estilo,Hilo,Lote,Lote 2,Nº Madeja,Metros a Teñir,Metros Producidos,fecha fin,fecha fin_hora
+20260826,1,509434,507221,TENIDO TREN 01,06:01,Primer Turno,"ABIEZER, GONZALEZ",FARINA,346,101181,0,12,16700,0,26/08/26,14:00
+20260826,2,509435,507221,TENIDO TREN 01,15:20,Segundo Turno,"GUILLERMO, RIVAS",FARINA,346,101181,0,12,16700,2000,26/08/26,22:00
+20260826,3,509436,507221,TENIDO TREN 01,22:00,Tercer Turno,"ALEXANDER, NOGUERA",FARINA,346,101181,0,12,16700,12000,27/08/26,02:45
+20260826,4,509433,507221,TENIDO TREN 02,06:01,Primer Turno,"ABIEZER, GONZALEZ",INDIGO SOFT,346,402180,0,12,16700,11100,26/08/26,14:00
