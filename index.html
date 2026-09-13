@@ -375,4 +375,832 @@
             <th>Lotes</th>
             <th>Tiempo</th>
             <th>Madejas</th>
-        </tr></thead><tbody id="tbodyOper
+        </tr></thead><tbody id="tbodyOperador"></tbody></table></div>
+    </div>
+
+    <!-- TAB ESTILO -->
+    <div class="tab-content" id="tab-titulo">
+        <div class="kpi-global">
+            <div class="kpi-card"><div class="kpi-label">Mts Producidos</div><div class="kpi-value blue" id="kpiTitProdMts">-</div><div class="kpi-sub">total</div></div>
+            <div class="kpi-card"><div class="kpi-label">Mts a Teñir</div><div class="kpi-value" id="kpiTitEspMts">-</div><div class="kpi-sub">total</div></div>
+            <div class="kpi-card"><div class="kpi-label">Lotes</div><div class="kpi-value orange" id="kpiTitLotes">-</div><div class="kpi-sub">distintos</div></div>
+            <div class="kpi-card"><div class="kpi-label">% Avance</div><div class="kpi-value green" id="kpiTitAvance">-</div><div class="kpi-sub">global</div></div>
+        </div>
+        <div class="tabla-wrapper"><table id="tablaTitulo"><thead><tr>
+            <th style="text-align:left;min-width:120px;">Estilo</th>
+            <th>Hilo</th>
+            <th>Mts Prod</th>
+            <th>Mts a Teñir</th>
+            <th>% Avance</th>
+            <th>Lotes</th>
+            <th>Turnos</th>
+            <th>Tiempo</th>
+        </tr></thead><tbody id="tbodyTitulo"></tbody></table></div>
+    </div>
+
+    <!-- TAB TIEMPOS -->
+    <div class="tab-content" id="tab-tiempos">
+        <div class="kpi-global">
+            <div class="kpi-card"><div class="kpi-label">Total Horas</div><div class="kpi-value pink" id="kpiTpTotalHorasTab">-</div><div class="kpi-sub">perdidas</div></div>
+            <div class="kpi-card"><div class="kpi-label">% Pérdida Prom.</div><div class="kpi-value orange" id="kpiTpPctPromedio">-</div><div class="kpi-sub">sobre turno</div></div>
+            <div class="kpi-card"><div class="kpi-label">Causas</div><div class="kpi-value blue" id="kpiTpCausas">-</div><div class="kpi-sub">distintas</div></div>
+            <div class="kpi-card"><div class="kpi-label">Causa Top</div><div class="kpi-value pink" id="kpiTpTopCausa" style="font-size:.85rem;">-</div><div class="kpi-sub" id="kpiTpTopCausaCant"></div></div>
+        </div>
+        <div class="roturas-grid" id="tiemposGrid"></div>
+    </div>
+
+    <!-- TAB COMENTARIOS -->
+    <div class="tab-content" id="tab-comentarios">
+        <div class="kpi-global">
+            <div class="kpi-card"><div class="kpi-label">Comentarios hoy</div><div class="kpi-value blue" id="kpiComHoy">-</div><div class="kpi-sub">en esta fecha</div></div>
+            <div class="kpi-card"><div class="kpi-label">Total histórico</div><div class="kpi-value" id="kpiComTotal">-</div><div class="kpi-sub">todos</div></div>
+            <div class="kpi-card"><div class="kpi-label">Categoría top</div><div class="kpi-value orange" id="kpiComTopCat" style="font-size:.9rem;">-</div><div class="kpi-sub">del día</div></div>
+            <div class="kpi-card"><div class="kpi-label">Último</div><div class="kpi-value blue" id="kpiComUltimo" style="font-size:.8rem;">-</div><div class="kpi-sub" id="kpiComUltimoSub"></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:10px;flex:1;min-height:0;">
+            <div class="com-block">
+                <div class="com-header"><h3>✍️ Nuevo comentario</h3><span class="com-badge" id="comFechaBadge">-</span></div>
+                <form id="formComentario" class="com-form">
+                    <div class="com-row"><label for="comNombre">👤 Nombre (opcional)</label><input type="text" id="comNombre" maxlength="50" placeholder="Anónimo"></div>
+                    <div class="com-row"><label for="comCategoria">🏷️ Categoría</label>
+                        <select id="comCategoria">
+                            <option value="Producción">Producción</option>
+                            <option value="Calidad">Calidad</option>
+                            <option value="Mantenimiento">Mantenimiento</option>
+                            <option value="Planificación">Planificación</option>
+                            <option value="Operario">Operario</option>
+                            <option value="Máquina">Máquina</option>
+                            <option value="Lote">Lote</option>
+                            <option value="Estilo">Estilo</option>
+                            <option value="General" selected>General</option>
+                        </select>
+                    </div>
+                    <div class="com-row"><label for="comMaquina">🏭 Tren (opcional)</label>
+                        <select id="comMaquina">
+                            <option value="">— Ninguno —</option>
+                            <option value="TENIDO TREN 01">TENIDO TREN 01</option>
+                            <option value="TENIDO TREN 02">TENIDO TREN 02</option>
+                        </select>
+                    </div>
+                    <div class="com-row"><label for="comTexto">💬 Comentario *</label>
+                        <textarea id="comTexto" rows="4" maxlength="500" required placeholder="Describe el evento..."></textarea>
+                        <div class="com-char-count"><span id="comCharCount">0</span>/500</div>
+                    </div>
+                    <div class="com-actions">
+                        <button type="submit" class="com-btn primary" id="comEnviar">📤 Publicar</button>
+                        <span class="com-estado" id="comEstado"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="com-block">
+                <div class="com-header"><h3>📋 Comentarios registrados</h3><span class="com-badge" id="comCountBadge">0</span></div>
+                <div class="com-filtros">
+                    <select id="comFiltroCat" class="com-filtro">
+                        <option value="">Todas las categorías</option>
+                        <option value="Producción">Producción</option>
+                        <option value="Calidad">Calidad</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                        <option value="Planificación">Planificación</option>
+                        <option value="Operario">Operario</option>
+                        <option value="Máquina">Máquina</option>
+                        <option value="Lote">Lote</option>
+                        <option value="Estilo">Estilo</option>
+                        <option value="General">General</option>
+                    </select>
+                    <input type="text" id="comBuscar" class="com-filtro" placeholder="🔍 Buscar...">
+                    <button type="button" class="com-btn-clear" id="comLimpiarFiltros">✕</button>
+                </div>
+                <div class="com-lista" id="comLista"><p class="com-vacio">Cargando comentarios…</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const DATA_PATH = 'data/';
+const PREFIJO_PRODUCCION = 'tenido_';
+const PREFIJO_TIEMPOS    = 'tiempos_perdidos_';
+const EXT = '.csv';
+const DIAS_HACIA_ATRAS = 120;
+
+const COMENTARIOS_CSV = 'data/comentarios.csv';
+const API_COMENTARIO = '/api/comentario';
+
+/* Constantes de negocio Tenido */
+const TURNOS_POR_DIA = 3;
+const HORAS_DIA = 24;
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+let produccionRaw = [];
+let tiemposData = [];
+let produccionData = [];
+let fechasDisponibles = [];
+let comentariosCache = [];
+let comentariosCargados = false;
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+
+function formatearFecha(f) {
+    if (!f || f.length !== 8) return f;
+    return f.slice(6,8)+'/'+f.slice(4,6)+'/'+f.slice(0,4);
+}
+
+function fechaAString(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const dia = String(d.getDate()).padStart(2,'0');
+    return `${y}${m}${dia}`;
+}
+
+/* Detecta separador: ; o , */
+function detectarSeparador(linea) {
+    const nSemi = (linea.match(/;/g)||[]).length;
+    const nComa = (linea.match(/,/g)||[]).length;
+    return nSemi > nComa ? ';' : ',';
+}
+
+/* Parser CSV robusto: respeta comillas, detecta separador, BOM */
+function parseCSV(text) {
+    if (!text) return [];
+    text = text.replace(/^\uFEFF/, '');
+    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+    if (lines.length < 2) return [];
+    const delim = detectarSeparador(lines[0]);
+
+    const parseLinea = (linea) => {
+        const out = [];
+        let cur = '', inQ = false;
+        for (let i = 0; i < linea.length; i++) {
+            const c = linea[i];
+            if (inQ) {
+                if (c === '"') {
+                    if (linea[i+1] === '"') { cur += '"'; i++; }
+                    else inQ = false;
+                } else cur += c;
+            } else {
+                if (c === '"') inQ = true;
+                else if (c === delim) { out.push(cur); cur = ''; }
+                else cur += c;
+            }
+        }
+        out.push(cur);
+        return out.map(v => v.trim());
+    };
+
+    const headers = parseLinea(lines[0]);
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+        const vals = parseLinea(lines[i]);
+        const obj = {};
+        headers.forEach((h, idx) => { obj[h] = vals[idx] ?? ''; });
+        result.push(obj);
+    }
+    return result;
+}
+
+/* Convierte "5,98" o "5.98" a 5.98 */
+function num(v) {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === 'number') return v;
+    const s = String(v).trim().replace(',', '.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+}
+
+/* Convierte "20260825" a Date a medianoche local */
+function fechaDesdeYYYYMMDD(s) {
+    if (!s || s.length !== 8) return null;
+    return new Date(parseInt(s.slice(0,4)), parseInt(s.slice(4,6))-1, parseInt(s.slice(6,8)));
+}
+
+/* Convierte "25/08/26" o "25/08/2026" a Date */
+function fechaCortaAObj(s) {
+    if (!s) return null;
+    const p = s.split('/');
+    if (p.length !== 3) return null;
+    const dia = parseInt(p[0]), mes = parseInt(p[1])-1;
+    let anio = parseInt(p[2]);
+    if (anio < 100) anio += 2000;
+    return new Date(anio, mes, dia);
+}
+
+/* Duración en minutos entre inicio y fin */
+function calcularDuracion(fechaInicioYYYYMMDD, horaInicio, fechaFinCorta, horaFin) {
+    const fIni = fechaDesdeYYYYMMDD(fechaInicioYYYYMMDD);
+    const fFin = fechaCortaAObj(fechaFinCorta);
+    if (!fIni || !fFin) return 0;
+    const [hI, mI] = (horaInicio||'00:00').split(':').map(Number);
+    const [hF, mF] = (horaFin||'00:00').split(':').map(Number);
+    const dIni = new Date(fIni.getFullYear(), fIni.getMonth(), fIni.getDate(), hI||0, mI||0);
+    const dFin = new Date(fFin.getFullYear(), fFin.getMonth(), fFin.getDate(), hF||0, mF||0);
+    let min = Math.round((dFin - dIni) / 60000);
+    if (min < 0) min = 0;
+    return min;
+}
+
+function formatTiempoHHMM(minutos) {
+    if (!minutos || minutos < 0) return '0:00';
+    const h = Math.floor(minutos/60);
+    const m = Math.round(minutos%60);
+    return `${h}:${String(m).padStart(2,'0')}`;
+}
+
+function escapeHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ============================================================
+   DESCUBRIMIENTO DE FECHAS (HEAD requests)
+   ============================================================ */
+async function existeArchivo(url) {
+    try {
+        const r = await fetch(url, { method:'HEAD', cache:'no-store' });
+        return r.ok;
+    } catch { return false; }
+}
+
+async function descubrirFechas() {
+    const hoy = new Date();
+    const candidatas = [];
+    for (let i = 0; i < DIAS_HACIA_ATRAS; i++) {
+        const d = new Date(hoy);
+        d.setDate(d.getDate() - i);
+        candidatas.push(fechaAString(d));
+    }
+    const encontradas = [];
+    const BLOQUE = 15;
+    for (let i = 0; i < candidatas.length; i += BLOQUE) {
+        const bloque = candidatas.slice(i, i + BLOQUE);
+        const res = await Promise.all(bloque.map(async f => {
+            const ok = await existeArchivo(`${DATA_PATH}${PREFIJO_PRODUCCION}${f}${EXT}`);
+            return ok ? f : null;
+        }));
+        res.forEach(f => { if (f) encontradas.push(f); });
+
+        const pct = Math.min(100, Math.round((i+BLOQUE)/candidatas.length*100));
+        $('loadingSub').textContent = `Buscando fechas… ${pct}% (${encontradas.length})`;
+    }
+    encontradas.sort((a,b) => b.localeCompare(a));
+    return encontradas;
+}
+
+/* ============================================================
+   VALIDACIÓN
+   ============================================================ */
+function validarProduccion(rows) {
+    const requeridas = ['fecha','Maquina','Hora Inicio','Turno','Persona','Estilo','Hilo','Lote','Nº Madeja','Metros a Teñir','Metros Producidos','fecha fin','fecha fin_hora'];
+    const faltantes = requeridas.filter(c => !(c in (rows[0]||{})));
+    return faltantes;
+}
+function validarTiempos(rows) {
+    const requeridas = ['Fecha','Maquina','Causa','Horas','% Tiempo Perdido'];
+    const faltantes = requeridas.filter(c => !(c in (rows[0]||{})));
+    return faltantes;
+}
+function mostrarErrores(errores) {
+    const panel = $('errorPanel');
+    if (!errores.length) { panel.classList.remove('visible'); panel.innerHTML=''; return; }
+    panel.innerHTML = '<strong>⚠️ Problemas al cargar los CSV:</strong><ul>' +
+        errores.map(e => `<li>${escapeHtml(e)}</li>`).join('') + '</ul>';
+    panel.classList.add('visible');
+}
+
+/* ============================================================
+   CARGA
+   ============================================================ */
+async function cargarCSV(url) {
+    const r = await fetch(url, { cache:'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status} en ${url}`);
+    return parseCSV(await r.text());
+}
+
+async function cargarFecha(fecha) {
+    const errores = [];
+    $('fileStatus').textContent = `Cargando ${formatearFecha(fecha)}…`;
+
+    // Producción (obligatorio)
+    try {
+        produccionRaw = await cargarCSV(`${DATA_PATH}${PREFIJO_PRODUCCION}${fecha}${EXT}`);
+        const faltantes = validarProduccion(produccionRaw);
+        if (faltantes.length) errores.push(`tenido_${fecha}.csv: faltan columnas → ${faltantes.join(', ')}`);
+        if (!produccionRaw.length) errores.push(`tenido_${fecha}.csv: sin filas de datos`);
+    } catch (e) {
+        errores.push(`No se pudo cargar tenido_${fecha}.csv (${e.message})`);
+        produccionRaw = [];
+    }
+
+    // Tiempos perdidos (opcional)
+    try {
+        tiemposData = await cargarCSV(`${DATA_PATH}${PREFIJO_TIEMPOS}${fecha}${EXT}`);
+        const faltantes = validarTiempos(tiemposData);
+        if (faltantes.length) errores.push(`tiempos_perdidos_${fecha}.csv: faltan columnas → ${faltantes.join(', ')}`);
+    } catch (e) {
+        tiemposData = [];
+    }
+
+    $('fileStatus').textContent = `Prod: ${produccionRaw.length} | Tiempos: ${tiemposData.length}`;
+    $('totalRegistros').textContent = produccionRaw.length;
+
+    procesarDatos();
+    mostrarErrores(errores);
+    render(fecha);
+}
+
+/* ============================================================
+   PROCESAMIENTO
+   ============================================================ */
+function procesarDatos() {
+    produccionData = produccionRaw.map(p => {
+        const metrosProd = num(p['Metros Producidos']);
+        const metrosTeñir = num(p['Metros a Teñir']);
+        const hilo = num(p['Hilo']);
+        const madejas = num(p['Nº Madeja']);
+        const duracion = calcularDuracion(p['fecha'], p['Hora Inicio'], p['fecha fin'], p['fecha fin_hora']);
+
+        return {
+            fecha: p['fecha'] || '',
+            maquina: p['Maquina'] || '',
+            hora_inicio: p['Hora Inicio'] || '',
+            turno: p['Turno'] || '',
+            persona: p['Persona'] || '',
+            estilo: p['Estilo'] || '',
+            hilo: hilo,
+            lote: p['Lote'] || '',
+            madejas: madejas,
+            metros_a_teñir: metrosTeñir,
+            metros_producidos: metrosProd,
+            fecha_fin: p['fecha fin'] || '',
+            hora_fin: p['fecha fin_hora'] || '',
+            duracion_minutos: duracion
+        };
+    });
+}
+
+/* ============================================================
+   CÁLCULO DE MÉTRICAS GLOBALES (8 KPIs)
+   ============================================================ */
+function calcularGlobales(data, tiempos) {
+    const totalProd = data.reduce((s,d) => s + d.metros_producidos, 0);
+    const totalTeñir = data.reduce((s,d) => s + d.metros_a_teñir, 0);
+    const lotes = new Set(data.map(d => d.lote).filter(Boolean));
+    const totalTiempo = data.reduce((s,d) => s + d.duracion_minutos, 0);
+    const totalHorasPerdidas = tiempos.reduce((s,t) => s + num(t['Horas']), 0);
+    const horasProductivas = Math.max(HORAS_DIA - totalHorasPerdidas, 0);
+    const disponibilidad = (horasProductivas / HORAS_DIA) * 100;
+    const avance = totalTeñir > 0 ? (totalProd / totalTeñir) * 100 : 0;
+    const efectividad = totalTeñir > 0 ? (totalProd / (TURNOS_POR_DIA * totalTeñir)) * 100 : 0;
+
+    return {
+        totalProd, totalTeñir,
+        lotes: lotes.size,
+        totalTiempo,
+        totalHorasPerdidas,
+        horasProductivas,
+        disponibilidad,
+        avance,
+        efectividad
+    };
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(fecha) {
+    if (!fecha) return;
+    $('fechaMostrada').textContent = formatearFecha(fecha);
+    const data = produccionData;
+    const tiempos = tiemposData;
+
+    const g = calcularGlobales(data, tiempos);
+
+    // KPIs cabecera (8)
+    $('kpiProdMts').textContent = g.totalProd.toLocaleString();
+    $('kpiEspMts').textContent = g.totalTeñir.toLocaleString();
+    $('kpiAvance').textContent = g.avance.toFixed(1) + '%';
+    $('kpiLotes').textContent = g.lotes;
+    $('kpiTiempoGlobal').textContent = formatTiempoHHMM(g.totalTiempo);
+    $('kpiTpTotalHoras').textContent = g.totalHorasPerdidas.toFixed(2) + 'h';
+    $('kpiDisponibilidad').textContent = g.disponibilidad.toFixed(1) + '%';
+    $('kpiEfectividad').textContent = g.efectividad.toFixed(1) + '%';
+
+    renderTrenes(data, tiempos);
+    renderOperador(data);
+    renderEstilo(data);
+    renderTiempos(tiempos);
+    renderComentarios(fecha);
+}
+
+/* ---------- Trenes (pestaña "Tren") ---------- */
+function renderTrenes(data, tiempos) {
+    const grid = $('maquinaGrid');
+    if (!data.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#78909c;">Sin datos de producción para esta fecha</div>`;
+        return;
+    }
+    const trenes = [...new Set(data.map(d => d.maquina))].sort();
+    let html = '';
+    trenes.forEach((tren, idx) => {
+        const items = data.filter(d => d.maquina === tren);
+        const tItems = tiempos.filter(t => t['Maquina'] === tren);
+        const prod = items.reduce((s,d) => s + d.metros_producidos, 0);
+        const teñir = items.reduce((s,d) => s + d.metros_a_teñir, 0);
+        const lotes = new Set(items.map(d => d.lote).filter(Boolean)).size;
+        const tiempo = items.reduce((s,d) => s + d.duracion_minutos, 0);
+        const horasPerd = tItems.reduce((s,t) => s + num(t['Horas']), 0);
+        const madejas = items.length;
+        const avance = teñir > 0 ? (prod/teñir)*100 : 0;
+        const efectividad = teñir > 0 ? (prod/(TURNOS_POR_DIA*teñir))*100 : 0;
+
+        html += `<div class="maquina-block">
+            <div class="maquina-header">
+                <h3>${idx===0?'🔵':'🟢'} ${tren}</h3>
+                <span class="total-badge">${formatTiempoHHMM(tiempo)}</span>
+            </div>
+            <div class="kpi-maquina-grid">
+                <div class="kpi-maquina-item"><span class="label">Mts Producidos</span><span class="value">${prod.toLocaleString()}</span></div>
+                <div class="kpi-maquina-item"><span class="label">Mts a Teñir</span><span class="value">${teñir.toLocaleString()}</span></div>
+                <div class="kpi-maquina-item"><span class="label">% Avance</span><span class="value efectividad">${avance.toFixed(1)}%</span></div>
+                <div class="kpi-maquina-item"><span class="label">Efectividad</span><span class="value efectividad">${efectividad.toFixed(1)}%</span></div>
+                <div class="kpi-maquina-item"><span class="label">Lotes</span><span class="value">${lotes}</span></div>
+                <div class="kpi-maquina-item"><span class="label">Cargas</span><span class="value">${madejas}</span></div>
+                <div class="kpi-maquina-item"><span class="label">T. Productivo</span><span class="value tiempo">${formatTiempoHHMM(tiempo)}</span></div>
+                <div class="kpi-maquina-item"><span class="label">T. Perdido</span><span class="value roturas">${horasPerd.toFixed(2)}h</span></div>
+            </div>
+        </div>`;
+    });
+    grid.innerHTML = html;
+}
+
+/* ---------- Operador ---------- */
+function renderOperador(data) {
+    const tbody = $('tbodyOperador');
+    if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:30px;color:#78909c;">Sin datos</td></tr>`;
+        ['kpiOpProdMts','kpiOpLotes','kpiOpAvance','kpiOpTiempo'].forEach(id => $(id).textContent = '-');
+        return;
+    }
+    const porOp = {};
+    data.forEach(d => {
+        if (!porOp[d.persona]) porOp[d.persona] = { prod:0, teñir:0, lotes:new Set(), tiempo:0, madejas:0, trenes:new Set(), turnos:new Set() };
+        const o = porOp[d.persona];
+        o.prod += d.metros_producidos;
+        o.teñir += d.metros_a_teñir;
+        if (d.lote) o.lotes.add(d.lote);
+        o.tiempo += d.duracion_minutos;
+        o.madejas += d.madejas;
+        if (d.maquina) o.trenes.add(d.maquina);
+        if (d.turno) o.turnos.add(d.turno);
+    });
+
+    let html = '';
+    const entries = Object.entries(porOp).sort((a,b) => b[1].prod - a[1].prod);
+    entries.forEach(([op, o]) => {
+        const avance = o.teñir > 0 ? (o.prod/o.teñir)*100 : 0;
+        html += `<tr>
+            <td class="nombre-col">${escapeHtml(op)}</td>
+            <td class="maquina-col">${[...o.trenes].join(', ')}</td>
+            <td>${[...o.turnos].join(', ')}</td>
+            <td>${o.prod.toLocaleString()}</td>
+            <td>${o.teñir.toLocaleString()}</td>
+            <td style="color:#00e676;font-weight:700;">${avance.toFixed(1)}%</td>
+            <td>${o.lotes.size}</td>
+            <td style="color:#4fc3f7;">${formatTiempoHHMM(o.tiempo)}</td>
+            <td>${o.madejas}</td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+
+    // KPIs globales de operador
+    const totalProd = entries.reduce((s,[_,o]) => s + o.prod, 0);
+    const totalTeñir = entries.reduce((s,[_,o]) => s + o.teñir, 0);
+    const totalLotes = new Set(data.map(d => d.lote).filter(Boolean)).size;
+    const totalTiempo = data.reduce((s,d) => s + d.duracion_minutos, 0);
+    $('kpiOpProdMts').textContent = totalProd.toLocaleString();
+    $('kpiOpLotes').textContent = totalLotes;
+    $('kpiOpAvance').textContent = totalTeñir > 0 ? ((totalProd/totalTeñir)*100).toFixed(1) + '%' : '-';
+    $('kpiOpTiempo').textContent = formatTiempoHHMM(totalTiempo);
+}
+
+/* ---------- Estilo ---------- */
+function renderEstilo(data) {
+    const tbody = $('tbodyTitulo');
+    if (!data.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:#78909c;">Sin datos</td></tr>`;
+        ['kpiTitProdMts','kpiTitEspMts','kpiTitLotes','kpiTitAvance'].forEach(id => $(id).textContent = '-');
+        return;
+    }
+    const porEstilo = {};
+    data.forEach(d => {
+        const key = `${d.estilo}|${d.hilo}`;
+        if (!porEstilo[key]) porEstilo[key] = { estilo:d.estilo, hilo:d.hilo, prod:0, teñir:0, lotes:new Set(), turnos:new Set(), tiempo:0 };
+        const e = porEstilo[key];
+        e.prod += d.metros_producidos;
+        e.teñir += d.metros_a_teñir;
+        if (d.lote) e.lotes.add(d.lote);
+        if (d.turno) e.turnos.add(d.turno);
+        e.tiempo += d.duracion_minutos;
+    });
+
+    let html = '';
+    const entries = Object.values(porEstilo).sort((a,b) => b.prod - a.prod);
+    entries.forEach(e => {
+        const avance = e.teñir > 0 ? (e.prod/e.teñir)*100 : 0;
+        html += `<tr>
+            <td class="nombre-col">${escapeHtml(e.estilo)}</td>
+            <td>${e.hilo}</td>
+            <td>${e.prod.toLocaleString()}</td>
+            <td>${e.teñir.toLocaleString()}</td>
+            <td style="color:#00e676;font-weight:700;">${avance.toFixed(1)}%</td>
+            <td>${e.lotes.size}</td>
+            <td>${[...e.turnos].join(', ')}</td>
+            <td style="color:#4fc3f7;">${formatTiempoHHMM(e.tiempo)}</td>
+        </tr>`;
+    });
+    tbody.innerHTML = html;
+
+    const totalProd = entries.reduce((s,e) => s + e.prod, 0);
+    const totalTeñir = entries.reduce((s,e) => s + e.teñir, 0);
+    const totalLotes = new Set(data.map(d => d.lote).filter(Boolean)).size;
+    $('kpiTitProdMts').textContent = totalProd.toLocaleString();
+    $('kpiTitEspMts').textContent = totalTeñir.toLocaleString();
+    $('kpiTitLotes').textContent = totalLotes;
+    $('kpiTitAvance').textContent = totalTeñir > 0 ? ((totalProd/totalTeñir)*100).toFixed(1) + '%' : '-';
+}
+
+/* ---------- Tiempos Perdidos ---------- */
+function renderTiempos(tiempos) {
+    const grid = $('tiemposGrid');
+    if (!tiempos.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#78909c;">Sin tiempos perdidos para esta fecha</div>`;
+        ['kpiTpTotalHorasTab','kpiTpPctPromedio','kpiTpCausas','kpiTpTopCausa','kpiTpTopCausaCant'].forEach(id => $(id).textContent = id==='kpiTpTopCausa' ? '-' : id==='kpiTpTopCausaCant' ? '' : '0');
+        return;
+    }
+    const totalHoras = tiempos.reduce((s,t) => s + num(t['Horas']), 0);
+    const causas = new Set(tiempos.map(t => t['Causa']));
+    const pctProm = tiempos.reduce((s,t) => s + num(t['% Tiempo Perdido']), 0) / tiempos.length;
+
+    const causaCount = {};
+    tiempos.forEach(t => { causaCount[t['Causa']] = (causaCount[t['Causa']]||0) + num(t['Horas']); });
+    let topCausa = '-', topHoras = 0;
+    Object.entries(causaCount).forEach(([c,h]) => { if (h > topHoras) { topHoras = h; topCausa = c; } });
+
+    $('kpiTpTotalHorasTab').textContent = totalHoras.toFixed(2) + ' h';
+    $('kpiTpPctPromedio').textContent = pctProm.toFixed(1) + '%';
+    $('kpiTpCausas').textContent = causas.size;
+    $('kpiTpTopCausa').textContent = topCausa;
+    $('kpiTpTopCausaCant').textContent = topHoras > 0 ? `${topHoras.toFixed(2)} h (${(topHoras/totalHoras*100).toFixed(1)}%)` : '';
+
+    // Bloques por tren
+    const trenes = [...new Set(tiempos.map(t => t['Maquina']))].sort();
+    let html = '';
+    trenes.forEach((tren, idx) => {
+        const items = tiempos.filter(t => t['Maquina'] === tren);
+        const totalMaq = items.reduce((s,t) => s + num(t['Horas']), 0);
+        const pctMaq = totalHoras > 0 ? (totalMaq/totalHoras*100).toFixed(1) : 0;
+        html += `<div class="rotura-block">
+            <div class="rotura-header">
+                <h3>${idx===0?'🔵':'🟢'} ${tren}</h3>
+                <span class="total-badge">${totalMaq.toFixed(2)} h (${pctMaq}%)</span>
+            </div>
+            <div class="rotura-detalle-wrap">
+                <table><thead><tr><th>Causa</th><th style="text-align:right">Horas</th><th style="text-align:right">%</th></tr></thead><tbody>`;
+        items.sort((a,b) => num(b['Horas']) - num(a['Horas'])).forEach(t => {
+            const h = num(t['Horas']);
+            const p = num(t['% Tiempo Perdido']);
+            const barW = Math.min(p*2.5, 80);
+            html += `<tr>
+                <td>${escapeHtml(t['Causa'])}</td>
+                <td style="text-align:right">${h.toFixed(2)}</td>
+                <td style="text-align:right"><span class="porcentaje-bar" style="width:${barW}px"></span><span class="porcentaje-text">${p.toFixed(1)}%</span></td>
+            </tr>`;
+        });
+        html += `</tbody></table></div></div>`;
+    });
+    grid.innerHTML = html;
+}
+
+/* ============================================================
+   COMENTARIOS
+   ============================================================ */
+function parseCSVLine(line) {
+    const out = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+            if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+            else inQ = !inQ;
+        } else if (c === ',' && !inQ) { out.push(cur); cur = ''; }
+        else cur += c;
+    }
+    out.push(cur);
+    return out;
+}
+
+async function cargarComentarios(forzar = false) {
+    if (comentariosCargados && !forzar) return comentariosCache;
+    try {
+        const r = await fetch(COMENTARIOS_CSV + '?t=' + Date.now(), { cache:'no-store' });
+        if (!r.ok) { comentariosCache = []; comentariosCargados = true; return []; }
+        const txt = await r.text();
+        const lineas = txt.split('\n').filter(l => l.trim() !== '');
+        if (lineas.length < 2) { comentariosCache = []; comentariosCargados = true; return []; }
+        const headers = parseCSVLine(lineas[0]);
+        comentariosCache = lineas.slice(1).map(l => {
+            const cols = parseCSVLine(l);
+            const obj = {};
+            headers.forEach((h,i) => obj[h] = cols[i] || '');
+            return obj;
+        });
+        comentariosCargados = true;
+        return comentariosCache;
+    } catch {
+        comentariosCache = []; comentariosCargados = true; return [];
+    }
+}
+
+function renderComentarios(fecha) {
+    $('comFechaBadge').textContent = formatearFecha(fecha);
+    const delDia = comentariosCache.filter(c => c.fecha === fecha);
+    $('kpiComHoy').textContent = delDia.length;
+    $('kpiComTotal').textContent = comentariosCache.length;
+
+    const catCount = {};
+    delDia.forEach(c => catCount[c.categoria] = (catCount[c.categoria]||0)+1);
+    let topCat = '-', topN = 0;
+    Object.entries(catCount).forEach(([c,n]) => { if (n > topN) { topN = n; topCat = c; } });
+    $('kpiComTopCat').textContent = topCat;
+
+    let ultimo = null;
+    comentariosCache.forEach(c => {
+        const t = new Date(c.timestamp).getTime();
+        if (!isNaN(t) && (!ultimo || t > new Date(ultimo.timestamp).getTime())) ultimo = c;
+    });
+    if (ultimo) {
+        $('kpiComUltimo').textContent = ultimo.categoria;
+        $('kpiComUltimoSub').textContent = `${ultimo.nombre} · ${formatearFecha(ultimo.fecha)}`;
+    } else {
+        $('kpiComUltimo').textContent = '-';
+        $('kpiComUltimoSub').textContent = '';
+    }
+
+    // Filtros
+    const fCat = $('comFiltroCat').value;
+    const fBus = $('comBuscar').value.toLowerCase().trim();
+    let filtrados = delDia;
+    if (fCat) filtrados = filtrados.filter(c => c.categoria === fCat);
+    if (fBus) filtrados = filtrados.filter(c => [c.comentario,c.nombre,c.maquina,c.categoria].join(' ').toLowerCase().includes(fBus));
+
+    $('comCountBadge').textContent = filtrados.length === delDia.length ? filtrados.length : `${filtrados.length}/${delDia.length}`;
+    $('badgeComCount').textContent = delDia.length;
+
+    const lista = $('comLista');
+    if (filtrados.length === 0) {
+        lista.innerHTML = delDia.length === 0
+            ? '<p class="com-vacio">Sin comentarios para esta fecha.</p>'
+            : '<p class="com-vacio">Ningún comentario coincide con los filtros.</p>';
+        return;
+    }
+    filtrados.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    lista.innerHTML = filtrados.map(c => {
+        const d = new Date(c.timestamp);
+        const fechaStr = isNaN(d) ? c.timestamp : d.toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        return `<div class="com-item">
+            <div class="com-item-header">
+                <div class="com-item-meta">
+                    <span class="com-nombre">${escapeHtml(c.nombre)}</span>
+                    <span class="com-cat">${escapeHtml(c.categoria)}</span>
+                    ${c.maquina ? `<span class="com-maq">${escapeHtml(c.maquina)}</span>` : ''}
+                </div>
+                <span class="com-fecha">${fechaStr}</span>
+            </div>
+            <div class="com-texto">${escapeHtml(c.comentario)}</div>
+        </div>`;
+    }).join('');
+}
+
+/* Enviar comentario */
+$('formComentario').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fecha = $('fechaSelect').value;
+    if (!fecha) { $('comEstado').textContent = '⚠️ Selecciona una fecha'; return; }
+    const payload = {
+        fecha,
+        nombre: $('comNombre').value.trim() || 'Anónimo',
+        categoria: $('comCategoria').value,
+        maquina: $('comMaquina').value,
+        comentario: $('comTexto').value.trim()
+    };
+    if (!payload.comentario) { $('comEstado').textContent = '⚠️ Vacío'; return; }
+
+    const btn = $('comEnviar'), est = $('comEstado');
+    btn.disabled = true; est.textContent = '⏳ Publicando…';
+    try {
+        const r = await fetch(API_COMENTARIO, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await r.json();
+        if (!r.ok || !data.ok) throw new Error(data.error || 'Error');
+        est.textContent = '✅ Publicado';
+        $('comTexto').value = ''; $('comCharCount').textContent = '0';
+        await cargarComentarios(true);
+        renderComentarios(fecha);
+        setTimeout(() => est.textContent = '', 3000);
+    } catch (err) {
+        est.textContent = '❌ ' + err.message;
+    } finally {
+        btn.disabled = false;
+    }
+});
+
+$('comTexto').addEventListener('input', function() { $('comCharCount').textContent = this.value.length; });
+$('comFiltroCat').addEventListener('change', () => renderComentarios($('fechaSelect').value));
+$('comBuscar').addEventListener('input', () => renderComentarios($('fechaSelect').value));
+$('comLimpiarFiltros').addEventListener('click', () => {
+    $('comFiltroCat').value = ''; $('comBuscar').value = '';
+    renderComentarios($('fechaSelect').value);
+});
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const tab = this.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.toggle('active', tc.id === `tab-${tab}`));
+        if (tab === 'comentarios') {
+            const f = $('fechaSelect').value;
+            if (f) (async () => { await cargarComentarios(true); renderComentarios(f); })();
+        }
+    });
+});
+
+/* ============================================================
+   ARRANQUE
+   ============================================================ */
+async function arrancar() {
+    const overlay = $('loadingOverlay');
+    try {
+        $('loadingText').textContent = 'Buscando fechas disponibles…';
+        fechasDisponibles = await descubrirFechas();
+
+        if (!fechasDisponibles.length) {
+            overlay.classList.add('hidden');
+            $('fechaSelect').innerHTML = '<option value="">Sin datos en data/</option>';
+            $('fileStatus').textContent = 'Sin datos';
+            $('fechaMostrada').textContent = 'Sin datos';
+            mostrarErrores(['No se encontró ningún archivo tenido_YYYYMMDD.csv en data/']);
+            return;
+        }
+
+        $('fechaSelect').innerHTML = fechasDisponibles.map(f => `<option value="${f}">${formatearFecha(f)}</option>`).join('');
+        const ultima = fechasDisponibles[0];
+        $('fechaSelect').value = ultima;
+
+        $('loadingText').textContent = 'Cargando datos…';
+        $('loadingSub').textContent = formatearFecha(ultima);
+
+        await cargarFecha(ultima);
+        await cargarComentarios(true);
+        renderComentarios(ultima);
+        overlay.classList.add('hidden');
+
+        $('fechaSelect').addEventListener('change', async function() {
+            if (!this.value) return;
+            overlay.classList.remove('hidden');
+            $('loadingText').textContent = 'Cargando fecha…';
+            $('loadingSub').textContent = formatearFecha(this.value);
+            try {
+                await cargarFecha(this.value);
+                await cargarComentarios(true);
+                renderComentarios(this.value);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                overlay.classList.add('hidden');
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        overlay.classList.add('hidden');
+        $('fechaSelect').innerHTML = '<option value="">Error</option>';
+        $('fileStatus').textContent = 'Error';
+        mostrarErrores(['Error al arrancar: ' + err.message]);
+    }
+}
+
+arrancar();
+</script>
+</body>
+</html>
