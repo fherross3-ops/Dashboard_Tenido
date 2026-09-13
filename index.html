@@ -339,7 +339,164 @@
     @media (max-width:1400px) {
         .kpi-global-8 { grid-template-columns:repeat(4,1fr); }
     }
-    @media (max-width:900px) {
+    
+
+
+/* ===== CONFIGURACIÓN ===== */
+.config-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+.config-block {
+    background: #0f1a2b;
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid #1e3347;
+    border-top: 3px solid #4fc3f7;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.config-block:nth-child(2) { border-top-color: #00e676; }
+.config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.config-header h3 {
+    font-weight: 700;
+    font-size: .9rem;
+    color: #4fc3f7;
+}
+.config-badge {
+    background: #1b3a4b;
+    padding: 2px 10px;
+    border-radius: 30px;
+    font-size: .65rem;
+    font-weight: 700;
+    color: #4fc3f7;
+}
+.config-item {
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #142230;
+}
+.config-item:last-child { border-bottom: none; }
+.config-item label {
+    font-size: .75rem;
+    font-weight: 600;
+    color: #90aae4;
+}
+.config-item input {
+    padding: 7px 10px;
+    border: 1px solid #1e3347;
+    border-radius: 6px;
+    font-size: .75rem;
+    font-weight: 600;
+    color: #e0e6ed;
+    text-align: right;
+    background: #0a121c;
+    outline: none;
+    transition: border .2s;
+    font-family: inherit;
+}
+.config-item input:focus {
+    border-color: #4fc3f7;
+    box-shadow: 0 0 0 3px rgba(79,195,247,.15);
+}
+.config-hint {
+    grid-column: 1 / -1;
+    font-size: .6rem;
+    color: #78909c;
+    margin-top: -4px;
+}
+.config-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+.config-btn {
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid #2a5a7a;
+    background: #1b3a4b;
+    color: #4fc3f7;
+    font-weight: 700;
+    font-size: .75rem;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: left;
+    font-family: inherit;
+}
+.config-btn:hover {
+    background: #2a5a7a;
+    color: #e0f7ff;
+}
+.config-btn.primary {
+    background: #1b3a4b;
+    color: #4fc3f7;
+    border-color: #4fc3f7;
+}
+.config-btn.primary:hover {
+    background: #2a5a7a;
+}
+.config-info {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #0a121c;
+    border-radius: 8px;
+    font-size: .65rem;
+    color: #90aae4;
+    line-height: 1.5;
+}
+.config-info code {
+    background: #1b3a4b;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: .6rem;
+    color: #4fc3f7;
+}
+.config-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #1b3a4b;
+    color: #4fc3f7;
+    border: 1px solid #4fc3f7;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: .8rem;
+    font-weight: 700;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all .3s;
+    z-index: 10000;
+}
+.config-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+@media (max-width: 900px) {
+    .config-grid { grid-template-columns: 1fr; }
+    .config-item { grid-template-columns: 1fr; }
+    .config-item input { width: 100%; text-align: left; }
+}
+
+
+
+
+
+@media (max-width:900px) {
         body { overflow-y:auto !important; height:auto !important; align-items:flex-start !important; }
         .dashboard { height:auto !important; max-height:none !important; }
         .kpi-global-8 { grid-template-columns:repeat(2,1fr); }
@@ -380,6 +537,7 @@
         <button class="tab-btn" data-tab="titulo">📌 Estilo</button>
 	<button class="tab-btn" data-tab="lote">📦 Lote</button>
         <button class="tab-btn" data-tab="tiempos">⏱️ Tiempos</button>
+	<button class="tab-btn" data-tab="config">⚙️ Configuración</button>
         <button class="tab-btn" data-tab="comentarios">💬 Comentarios</button>
     </div>
 
@@ -493,6 +651,63 @@
         <div class="roturas-grid" id="tiemposGrid"></div>
     </div>
 
+
+
+<!-- TAB CONFIGURACIÓN -->
+<div class="tab-content" id="tab-config">
+    <div class="kpi-global">
+        <div class="kpi-card"><div class="kpi-label">Estado actual</div><div class="kpi-value" id="cfgEstado" style="font-size:.95rem;">Por defecto</div><div class="kpi-sub">constantes en uso</div></div>
+        <div class="kpi-card"><div class="kpi-label">Última modificación</div><div class="kpi-value" id="cfgFechaMod" style="font-size:.95rem;">-</div><div class="kpi-sub">localStorage</div></div>
+        <div class="kpi-card"><div class="kpi-label">Mts / Lote</div><div class="kpi-value blue" id="cfgValMts">-</div><div class="kpi-sub">unidad base</div></div>
+        <div class="kpi-card"><div class="kpi-label">Turnos / Día</div><div class="kpi-value orange" id="cfgValTurnos">-</div><div class="kpi-sub">para efectividad</div></div>
+    </div>
+    <div class="config-grid">
+        <div class="config-block">
+            <div class="config-header">
+                <h3>⚙️ Constantes de Producción</h3>
+                <span class="config-badge" id="cfgBadgeProd">Editable</span>
+            </div>
+            <div class="config-item">
+                <label for="cfgMtsPorLote">Metros por lote</label>
+                <input type="number" id="cfgMtsPorLote" min="1" step="1">
+                <span class="config-hint">Valor por defecto: 16700</span>
+            </div>
+            <div class="config-item">
+                <label for="cfgTurnosDia">Turnos por día</label>
+                <input type="number" id="cfgTurnosDia" min="1" step="1">
+                <span class="config-hint">Valor por defecto: 3</span>
+            </div>
+            <div class="config-item">
+                <label for="cfgHorasDia">Horas por día</label>
+                <input type="number" id="cfgHorasDia" min="1" step="1">
+                <span class="config-hint">Valor por defecto: 24</span>
+            </div>
+        </div>
+        <div class="config-block">
+            <div class="config-header">
+                <h3>💾 Acciones</h3>
+                <span class="config-badge">localStorage</span>
+            </div>
+            <div class="config-actions">
+                <button class="config-btn primary" id="cfgGuardar">💾 Guardar y aplicar</button>
+                <button class="config-btn" id="cfgRestaurar">♻️ Restaurar por defecto</button>
+                <button class="config-btn" id="cfgExportar">📤 Exportar JSON</button>
+                <button class="config-btn" id="cfgImportar">📥 Importar JSON</button>
+                <input type="file" id="cfgImportarFile" accept=".json" style="display:none;">
+            </div>
+            <div class="config-info">
+                <p>💡 Los cambios se guardan en <strong>este navegador</strong>. No afectan a otros usuarios ni al repo de GitHub.</p>
+                <p style="margin-top:6px;">📌 Para que un cambio sea permanente para todos, edita <code>index.html</code> y cambia los valores en <code>DEFAULTS</code>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
     <!-- TAB COMENTARIOS -->
     <div class="tab-content" id="tab-comentarios">
         <div class="kpi-global">
@@ -574,8 +789,23 @@ const COMENTARIOS_CSV = 'data/comentarios.csv';
 const API_COMENTARIO = '/api/comentario';
 
 /* Constantes de negocio Tenido */
-const TURNOS_POR_DIA = 3;
-const HORAS_DIA = 24;
+/* ============================================================
+   CONSTANTES DE NEGOCIO (editables con localStorage)
+   ============================================================ */
+const DEFAULTS = {
+    mtsPorLote: 16700,
+    turnosPorDia: 3,
+    horasDia: 24,
+};
+
+// Valores activos (se pueden modificar desde Configuración)
+let METROS_POR_LOTE = DEFAULTS.mtsPorLote;
+let TURNOS_POR_DIA = DEFAULTS.turnosPorDia;
+let HORAS_DIA = DEFAULTS.horasDia;
+
+const STORAGE_KEY = 'tenido_config_v1';
+
+
 const MIN_DURACION_MIN = 60;              // mínimo 1h para considerar una duración "válida"
 const MAX_DURACION_MIN = HORAS_DIA * 60;  // máximo 24h por fila
 
@@ -1567,6 +1797,169 @@ async function arrancar() {
         mostrarErrores(['Error al arrancar: ' + err.message]);
     }
 }
+
+
+
+/* ============================================================
+   CONFIGURACIÓN — constantes editables
+   ============================================================ */
+function cargarConfigGuardada() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+function aplicarConfig(cfg) {
+    if (!cfg) return false;
+    let hubo = false;
+    if (typeof cfg.mtsPorLote === 'number' && cfg.mtsPorLote > 0) {
+        METROS_POR_LOTE = cfg.mtsPorLote; hubo = true;
+    }
+    if (typeof cfg.turnosPorDia === 'number' && cfg.turnosPorDia > 0) {
+        TURNOS_POR_DIA = cfg.turnosPorDia; hubo = true;
+    }
+    if (typeof cfg.horasDia === 'number' && cfg.horasDia > 0) {
+        HORAS_DIA = cfg.horasDia; hubo = true;
+    }
+    return hubo;
+}
+
+function guardarConfig() {
+    const cfg = {
+        mtsPorLote: parseFloat($('cfgMtsPorLote').value) || DEFAULTS.mtsPorLote,
+        turnosPorDia: parseFloat($('cfgTurnosDia').value) || DEFAULTS.turnosPorDia,
+        horasDia: parseFloat($('cfgHorasDia').value) || DEFAULTS.horasDia,
+        fechaModificacion: new Date().toISOString(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+    return aplicarConfig(cfg);
+}
+
+function restaurarDefaults() {
+    localStorage.removeItem(STORAGE_KEY);
+    METROS_POR_LOTE = DEFAULTS.mtsPorLote;
+    TURNOS_POR_DIA = DEFAULTS.turnosPorDia;
+    HORAS_DIA = DEFAULTS.horasDia;
+    pintarFormularioConfig(null);
+}
+
+function pintarFormularioConfig(cfg) {
+    $('cfgMtsPorLote').value = METROS_POR_LOTE;
+    $('cfgTurnosDia').value = TURNOS_POR_DIA;
+    $('cfgHorasDia').value = HORAS_DIA;
+
+    const estado = $('cfgEstado');
+    const fechaMod = $('cfgFechaMod');
+    const badge = $('cfgBadgeProd');
+
+    if (cfg && cfg.fechaModificacion) {
+        estado.textContent = 'Personalizado';
+        estado.style.color = '#ffb74d';
+        const d = new Date(cfg.fechaModificacion);
+        fechaMod.textContent = d.toLocaleString('es-ES', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        badge.textContent = 'Modificado';
+        badge.style.background = '#3a2f1a';
+        badge.style.color = '#ffb74d';
+    } else {
+        estado.textContent = 'Por defecto';
+        estado.style.color = '#00e676';
+        fechaMod.textContent = '-';
+        badge.textContent = 'Editable';
+        badge.style.background = '#1b3a4b';
+        badge.style.color = '#4fc3f7';
+    }
+
+    $('cfgValMts').textContent = METROS_POR_LOTE.toLocaleString();
+    $('cfgValTurnos').textContent = TURNOS_POR_DIA;
+}
+
+function mostrarToast(msg) {
+    let toast = document.getElementById('configToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'configToast';
+        toast.className = 'config-toast';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function refrescarDashboard() {
+    const sel = $('fechaSelect');
+    if (sel && sel.value) {
+        render(sel.value);
+    }
+}
+
+// Eventos de la pestaña Configuración
+$('cfgGuardar').addEventListener('click', () => {
+    guardarConfig();
+    pintarFormularioConfig(cargarConfigGuardada());
+    refrescarDashboard();
+    mostrarToast('✅ Configuración guardada y aplicada');
+});
+
+$('cfgRestaurar').addEventListener('click', () => {
+    restaurarDefaults();
+    refrescarDashboard();
+    mostrarToast('♻️ Constantes restauradas por defecto');
+});
+
+$('cfgExportar').addEventListener('click', () => {
+    const cfg = cargarConfigGuardada() || {
+        mtsPorLote: METROS_POR_LOTE,
+        turnosPorDia: TURNOS_POR_DIA,
+        horasDia: HORAS_DIA,
+        fechaModificacion: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `config_tenido_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    mostrarToast('📤 Configuración exportada');
+});
+
+$('cfgImportar').addEventListener('click', () => {
+    $('cfgImportarFile').click();
+});
+
+$('cfgImportarFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        try {
+            const cfg = JSON.parse(ev.target.result);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+            aplicarConfig(cfg);
+            pintarFormularioConfig(cfg);
+            refrescarDashboard();
+            mostrarToast('📥 Configuración importada');
+        } catch (err) {
+            alert('Archivo JSON inválido: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    this.value = '';
+});
+
+// Aplicar la configuración guardada al arrancar
+const _cfgInicial = cargarConfigGuardada();
+aplicarConfig(_cfgInicial);
+pintarFormularioConfig(_cfgInicial);
+
 
 arrancar();
 </script>
