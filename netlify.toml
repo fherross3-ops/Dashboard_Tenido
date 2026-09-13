@@ -2,20 +2,29 @@
   publish = "."
   command = ""
 
-# Nunca cachear el index.json: así los cambios de fechas se ven inmediatamente
-[[headers]]
-  for = "/data/index.json"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Content-Type = "application/json; charset=utf-8"
+[functions]
+  directory = "netlify/functions"
 
-# CSVs: cache corto y CORS abierto (por si algún día usas otro dominio)
+# API de comentarios → Netlify Function
+[[redirects]]
+  from = "/api/comentario"
+  to = "/.netlify/functions/comentario"
+  status = 200
+
+# CSVs de producción y tiempos: cache corto
 [[headers]]
-  for = "/data/*/*.csv"
+  for = "/data/*.csv"
   [headers.values]
     Cache-Control = "public, max-age=300"
     Content-Type = "text/csv; charset=utf-8"
     Access-Control-Allow-Origin = "*"
+
+# comentarios.csv: nunca cachear (se escribe desde la función)
+[[headers]]
+  for = "/data/comentarios.csv"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Content-Type = "text/csv; charset=utf-8"
 
 # HTML: siempre revalidar
 [[headers]]
