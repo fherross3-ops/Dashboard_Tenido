@@ -1,0 +1,4 @@
+maquina,tipo_rotura,cantidad,fecha
+URDIDORA # 01,Interferencia entre hilos,27,20260913
+URDIDORA # 01,Moña,1,20260913
+URDIDORA # 01,Hilos sueltos,4,20260913
