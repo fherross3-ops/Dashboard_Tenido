@@ -1,8 +1,0 @@
-maquina,tipo_rotura,cantidad,fecha
-URDIDORA # 01,Interferencia entre hilos,34,20260915
-URDIDORA # 01,Moña,4,20260915
-URDIDORA # 01,Hilos sueltos,13,20260915
-URDIDORA # 02,Moña,3,20260915
-URDIDORA # 03,Cola o reserva,3,20260915
-URDIDORA # 03,Moña,1,20260915
-URDIDORA # 03,Hilos sueltos,1,20260915
