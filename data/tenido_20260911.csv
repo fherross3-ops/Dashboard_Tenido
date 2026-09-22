@@ -1,0 +1,4 @@
+﻿"fecha","#","ID","Nº","Maquina","Hora Inicio","Turno","Persona","Estilo","Hilo","Lote","Lote 2","Nº Madeja","Metros a Teñir","Metros Producidos","fecha fin","fecha fin_hora"
+"20260911","1","517538","507221","TENIDO TREN 02","06:01","Primer Turno","ALEXANDER, NOGUERA ALEXA","INDIGO SOFT","346","202195","0","12","16700","0","11/09/26","14:00"
+"20260911","2","518085","507221","TENIDO TREN 02","15:20","Segundo Turno","ABIEZER, GONZALEZ ALEXA","INDIGO SOFT","346","202195","0","12","16700","0","11/09/26","22:00"
+"20260911","3","518086","507221","TENIDO TREN 02","22:00","Tercer Turno","GUILLERMO, RIVAS ALEXA","INDIGO SOFT","346","202195","0","12","16700","0","12/09/26","02:45"
