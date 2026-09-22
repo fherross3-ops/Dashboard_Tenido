@@ -1,4 +1,4 @@
-﻿fecha,#,ID,Nº,Maquina,Hora Inicio,Turno,Persona,Estilo,Hilo,Lote,Lote 2,Nº Madeja,Metros a Teñir,Metros Producidos,fecha fin,fecha fin_hora
-20260901,1,512947,507221,TENIDO TREN 02,06:01,Primer Turno,"GUILLERMO, RIVAS",INDIGO SOFT,346,412186,0,12,16700,0,01/09/26,14:00
-20260901,2,513005,507221,TENIDO TREN 02,15:20,Segundo Turno,"ALEXANDER, NOGUERA",INDIGO SOFT,346,412186,0,12,16700,8800,01/09/26,22:00
-20260901,3,513006,507221,TENIDO TREN 02,22:00,Tercer Turno,"ABIEZER, GONZALEZ",INDIGO SOFT,346,412186,0,12,16700,21600,02/09/26,02:45
+﻿"fecha","#","ID","Nº","Maquina","Hora Inicio","Turno","Persona","Estilo","Hilo","Lote","Lote 2","Nº Madeja","Metros a Teñir","Metros Producidos","fecha fin","fecha fin_hora"
+"20260901","1","512947","507221","TENIDO TREN 02","06:01","Primer Turno","GUILLERMO, RIVAS","INDIGO SOFT","346","412186","0","12","16700","0","01/09/26","14:00"
+"20260901","2","513005","507221","TENIDO TREN 02","15:20","Segundo Turno","ALEXANDER, NOGUERA","INDIGO SOFT","346","412186","0","12","16700","8800","01/09/26","22:00"
+"20260901","3","513006","507221","TENIDO TREN 02","22:00","Tercer Turno","ABIEZER, GONZALEZ","INDIGO SOFT","346","412186","0","12","16700","21600","02/09/26","02:45"

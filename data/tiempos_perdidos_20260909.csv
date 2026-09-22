@@ -1,3 +1,2 @@
-fecha,maquina,item,codigo,causa,hrs,porcentaje
-20260909,URDIDORA # 01,1,56,PREPARACION MAQUINA URDIDO,2.82,35.25
-20260909,URDIDORA # 01,2,14,FALLA OPERATIVA.,1.25,15.63
+﻿Fecha;Maquina;Item;Codigo;Causa;Horas;% Tiempo Perdido
+2026/09/09;TENIDO TREN 02;;;SIN DATOS;;
