@@ -1,0 +1,4 @@
+﻿fecha,Maquina,Hora Inicio,Turno,Persona,Estilo,Hilo,Lote,Nº Madeja,Metros a Teñir,Metros Producidos,fecha fin,fecha fin_hora
+20260922,TENIDO TREN 01,,,"GUILLERMO, RIVAS",FARINA,,301201,1,,0,,
+20260922,TENIDO TREN 01,,,"ALEXANDER, NOGUERA",FARINA,,301201,2,,1500,,
+20260922,TENIDO TREN 01,,,"ABIEZER, GONZALEZ",FARINA,,301201,3,,12000,,
