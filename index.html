@@ -336,6 +336,20 @@
     }
     .com-btn-clear:hover { background:#3a0f1a; color:#f06292; border-color:#f06292; }
 
+    /* INPUT DATE + HINT COMENTARIOS */
+    .com-hint {
+        font-size:.6rem; color:#78909c; margin-top:2px; line-height:1.3;
+    }
+    .com-row input[type="date"] {
+        padding:7px 10px; border:1px solid #1e3347; border-radius:6px;
+        font-size:.75rem; font-family:inherit; color:#e0e6ed;
+        background:#0a121c; outline:none; transition:border .2s;
+    }
+    .com-row input[type="date"]:focus {
+        border-color:#4fc3f7;
+        box-shadow:0 0 0 3px rgba(79,195,247,.15);
+    }
+
     @media (max-width:1400px) {
         .kpi-global-8 { grid-template-columns:repeat(4,1fr); }
     }
@@ -638,8 +652,6 @@
 
 
 
-
-
     <!-- TAB TIEMPOS -->
     <div class="tab-content" id="tab-tiempos">
         <div class="kpi-global">
@@ -708,6 +720,7 @@
 
 
 
+
     <!-- TAB COMENTARIOS -->
     <div class="tab-content" id="tab-comentarios">
         <div class="kpi-global">
@@ -740,6 +753,10 @@
                             <option value="TENIDO TREN 01">TENIDO TREN 01</option>
                             <option value="TENIDO TREN 02">TENIDO TREN 02</option>
                         </select>
+                    </div>
+                    <div class="com-row"><label for="comFecha">📅 Fecha del evento</label>
+                        <input type="date" id="comFecha" required>
+                        <span class="com-hint">Por defecto: la fecha mostrada. Cámbiala si el evento es de otro día.</span>
                     </div>
                     <div class="com-row"><label for="comTexto">💬 Comentario *</label>
                         <textarea id="comTexto" rows="4" maxlength="500" required placeholder="Describe el evento..."></textarea>
@@ -837,6 +854,16 @@ function fechaAString(d) {
     return `${y}${m}${dia}`;
 }
 
+function fechaParaInput(fechaYYYYMMDD) {
+    if (!fechaYYYYMMDD || fechaYYYYMMDD.length !== 8) return '';
+    return `${fechaYYYYMMDD.slice(0,4)}-${fechaYYYYMMDD.slice(4,6)}-${fechaYYYYMMDD.slice(6,8)}`;
+}
+
+function inputParaFecha(iso) {
+    if (!iso) return '';
+    return iso.replace(/-/g, '');
+}
+
 function detectarSeparador(linea) {
     const nSemi = (linea.match(/;/g)||[]).length;
     const nComa = (linea.match(/,/g)||[]).length;
@@ -918,10 +945,6 @@ function fechaCortaAObj(s) {
 
 /* ============================================================
    CAMBIO 1: Normalización de duración
-   - Si duración > 24h y restar 1 día al fin da algo entre 0 y 24h
-     → se corrige (asume que el fin era del mismo día)
-   - Si aún > 24h → se marca como "anómala" y se recorta a 24h
-   Devuelve: { ini: Date, fin: Date, min: number, corregida: bool, anomala: bool }
    ============================================================ */
 function normalizarIntervalo(fechaInicioYYYYMMDD, horaInicio, fechaFinCorta, horaFin, idx) {
     const fIni = fechaDesdeYYYYMMDD(fechaInicioYYYYMMDD);
@@ -940,28 +963,24 @@ function normalizarIntervalo(fechaInicioYYYYMMDD, horaInicio, fechaFinCorta, hor
     let corregida = false;
     let anomala = false;
 
-    // Si es negativa, la marcamos como anómala con duración 0
     if (min < 0) {
         return { ini: dIni, fin: dIni, min: 0, corregida: false, anomala: true };
     }
 
-    // Si > 24h, probamos restar 1 día al fin
     if (min > MAX_DURACION_MIN) {
         const dFinAlt = new Date(dFin);
         dFinAlt.setDate(dFinAlt.getDate() - 1);
         const minAlt = Math.round((dFinAlt - dIni) / 60000);
         if (minAlt >= 0 && minAlt <= MAX_DURACION_MIN) {
-            // Corrección plausible
             dFin = dFinAlt;
             min = minAlt;
             corregida = true;
             avisosDuracion.push({
                 idx, motivo: 'Duración corregida restando 1 día al fin',
-                original: Math.round((dFinAlt - dIni) / 60000),  // no exacto pero informativo
+                original: Math.round((dFinAlt - dIni) / 60000),
                 nuevo: minAlt
             });
         } else {
-            // Aún > 24h → anómala, recortamos a 24h
             min = MAX_DURACION_MIN;
             anomala = true;
             avisosDuracion.push({
@@ -976,7 +995,6 @@ function normalizarIntervalo(fechaInicioYYYYMMDD, horaInicio, fechaFinCorta, hor
 
 /* ============================================================
    CAMBIO 2: Intervalo unión
-   Fusiona todos los intervalos solapados y devuelve minutos totales
    ============================================================ */
 function calcularIntervaloUnion(intervalos) {
     if (!intervalos.length) return { totalMin: 0, bloques: [] };
@@ -988,7 +1006,6 @@ function calcularIntervaloUnion(intervalos) {
     for (let i = 1; i < ordenados.length; i++) {
         const it = ordenados[i];
         if (it.ini <= fin) {
-            // Solapamiento o contigüidad
             fin = new Date(Math.max(fin.getTime(), it.fin.getTime()));
         } else {
             bloques.push({ ini, fin });
@@ -1008,9 +1025,6 @@ function calcularIntervaloUnion(intervalos) {
 
 /* ============================================================
    CAMBIO 3: Huecos
-   Dado el intervalo unión y los tiempos perdidos, calcula:
-   - Tiempo entre primera y última carga (ventana total)
-   - Huecos = ventana - unión
    ============================================================ */
 function calcularHuecos(intervalos, union) {
     if (!intervalos.length || !union.bloques.length) {
@@ -1183,7 +1197,6 @@ function calcularGlobales(data, tiempos) {
     const totalTeñir = data.reduce((s,d) => s + d.metros_a_teñir, 0);
     const lotes = new Set(data.map(d => d.lote).filter(Boolean));
 
-    // T. Productivo = intervalo unión de todas las cargas
     const intervalos = data
         .filter(d => d.intervalo && d.intervalo.ini && d.intervalo.fin)
         .map(d => ({ ini: d.intervalo.ini, fin: d.intervalo.fin }));
@@ -1260,14 +1273,12 @@ function renderTrenes(data, tiempos) {
         const avance = teñir > 0 ? (prod/teñir)*100 : 0;
         const efectividad = teñir > 0 ? (prod/(TURNOS_POR_DIA*teñir))*100 : 0;
 
-        // Intervalo unión por tren
         const intervalos = items
             .filter(d => d.intervalo && d.intervalo.ini && d.intervalo.fin)
             .map(d => ({ ini: d.intervalo.ini, fin: d.intervalo.fin }));
         const union = calcularIntervaloUnion(intervalos);
         const huecos = calcularHuecos(intervalos, union);
 
-        // ¿Hay filas corregidas o anómalas?
         const corregidas = items.filter(d => d.corregida).length;
         const anomalas = items.filter(d => d.anomala).length;
         const flagDuracion = anomalas > 0 ? '⚠️' : (corregidas > 0 ? 'ℹ️' : '');
@@ -1415,7 +1426,6 @@ function renderLote(data) {
         return;
     }
 
-    // Agrupar por lote
     const porLote = {};
     data.forEach(d => {
         const lote = d.lote || '—';
@@ -1447,7 +1457,6 @@ function renderLote(data) {
         if (d.hora_inicio) l.primerasHoras.push(d.hora_inicio);
     });
 
-    // Construir filas
     const filas = Object.values(porLote).map(l => {
         const avance = l.teñir > 0 ? (l.prod / l.teñir) * 100 : 0;
         let estado = 'pendiente';
@@ -1465,14 +1474,12 @@ function renderLote(data) {
             estadoTxt = 'Parcial';
         }
 
-        // Intervalos → hora inicio y fin
         let inicioTxt = '—', finTxt = '—';
         if (l.intervalos.length) {
             const minIni = new Date(Math.min(...l.intervalos.map(i => i.ini.getTime())));
             const maxFin = new Date(Math.max(...l.intervalos.map(i => i.fin.getTime())));
             inicioTxt = minIni.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
             finTxt = maxFin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            // Si cruza medianoche
             if (maxFin.getDate() !== minIni.getDate()) {
                 finTxt += ' (+1)';
             }
@@ -1493,7 +1500,6 @@ function renderLote(data) {
         };
     });
 
-    // Ordenar por % avance descendente
     filas.sort((a, b) => b.avance - a.avance);
 
     let html = '';
@@ -1523,7 +1529,6 @@ function renderLote(data) {
     });
     tbody.innerHTML = html;
 
-    // KPIs globales
     const totalProd = filas.reduce((s, f) => s + f.prod, 0);
     const totalTeñir = filas.reduce((s, f) => s + f.teñir, 0);
     $('kpiLoteProdMts').textContent = totalProd.toLocaleString();
@@ -1687,8 +1692,10 @@ function renderComentarios(fecha) {
 /* Enviar comentario */
 $('formComentario').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fecha = $('fechaSelect').value;
-    if (!fecha) { $('comEstado').textContent = '⚠️ Selecciona una fecha'; return; }
+    const fechaFormulario = $('comFecha').value;
+    if (!fechaFormulario) { $('comEstado').textContent = '⚠️ Selecciona una fecha para el comentario'; return; }
+    const fecha = inputParaFecha(fechaFormulario);
+    const fechaMostrada = $('fechaSelect').value;
     const payload = {
         fecha,
         nombre: $('comNombre').value.trim() || 'Anónimo',
@@ -1708,11 +1715,15 @@ $('formComentario').addEventListener('submit', async (e) => {
         });
         const data = await r.json();
         if (!r.ok || !data.ok) throw new Error(data.error || 'Error');
-        est.textContent = '✅ Publicado';
+        if (fecha === fechaMostrada) {
+            est.textContent = '✅ Publicado';
+        } else {
+            est.textContent = `✅ Guardado para ${formatearFecha(fecha)} · aparecerá cuando se cargue ese día`;
+        }
         $('comTexto').value = ''; $('comCharCount').textContent = '0';
         await cargarComentarios(true);
-        renderComentarios(fecha);
-        setTimeout(() => est.textContent = '', 3000);
+        renderComentarios(fechaMostrada);
+        setTimeout(() => est.textContent = '', 5000);
     } catch (err) {
         est.textContent = '❌ ' + err.message;
     } finally {
@@ -1765,6 +1776,7 @@ async function arrancar() {
         $('fechaSelect').innerHTML = fechasDisponibles.map(f => `<option value="${f}">${formatearFecha(f)}</option>`).join('');
         const ultima = fechasDisponibles[0];
         $('fechaSelect').value = ultima;
+        $('comFecha').value = fechaParaInput(ultima);
 
         $('loadingText').textContent = 'Cargando datos…';
         $('loadingSub').textContent = formatearFecha(ultima);
@@ -1776,6 +1788,7 @@ async function arrancar() {
 
         $('fechaSelect').addEventListener('change', async function() {
             if (!this.value) return;
+            $('comFecha').value = fechaParaInput(this.value);
             overlay.classList.remove('hidden');
             $('loadingText').textContent = 'Cargando fecha…';
             $('loadingSub').textContent = formatearFecha(this.value);
