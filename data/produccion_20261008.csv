@@ -1,0 +1,14 @@
+﻿Tipo,Col_1,Col_2,Col_3,Col_4,Col_5,Col_6,Col_7,Col_8,Col_9,Col_10,Col_11,Col_12
+Detalle_Produccion,08-10-2026,GLOBAL,1,529986,"Hector, MONTILLA",OXIGENO,8 Urd,2089,11,19500,3,0.445
+Detalle_Produccion,08-10-2026,GLOBAL,2,529987,"Hector, MONTILLA",OXIGENO,8 Urd,2089,12,19500,0,0.000
+Detalle_Produccion,08-10-2026,GLOBAL,3,529984,"Hector, MONTILLA",OXIGENO,8 Urd,2089,9,19500,12,1.779
+Detalle_Produccion,08-10-2026,GLOBAL,4,529985,"Hector, MONTILLA",OXIGENO,8 Urd,2089,10,19500,5,0.741
+Detalle_Produccion,08-10-2026,GLOBAL,1,529989,"Hector, MONTILLA",INDIGO SOFT,7 Urd,4075,2,6000,2,0.963
+Detalle_Produccion,08-10-2026,GLOBAL,2,529988,"Hector, MONTILLA",INDIGO SOFT,7 Urd,4075,1,16200,3,0.535
+Roturas_Maquina,08-10-2026,1,GLOBAL,27,Interferencia entre hilos,18,,,,,,
+Roturas_Maquina,08-10-2026,2,GLOBAL,31,Interferencia manipulacion,1,,,,,,
+Roturas_Maquina,08-10-2026,3,GLOBAL,1,Moña,1,,,,,,
+Roturas_Maquina,08-10-2026,1,GLOBAL,1,Hilos sueltos,8,,,,,,
+Roturas_Maquina,08-10-2026,1,GLOBAL,1,Moña,4,,,,,,
+Roturas_Maquina,08-10-2026,2,GLOBAL,27,Interferencia entre hilos,1,,,,,,
+Roturas_Maquina,08-10-2026,1,GLOBAL,1,Hilos sueltos,3,,,,,,
