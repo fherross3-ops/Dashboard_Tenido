@@ -1,0 +1,4 @@
+﻿"fecha","#","ID","Nº","Maquina","Hora Inicio","Turno","Persona","Estilo","Hilo","Lote","Lote 2","Nº Madeja","Metros a Teñir","Metros Producidos","fecha fin","fecha fin_hora"
+"20261008","1","529928","507221","TENIDO TREN 02","06:01","Primer Turno","ABIEZER, GONZALEZ","FASHION OSCURO","346","402214","0","12","16700","0","08/10/26","14:00"
+"20261008","2","529929","507221","TENIDO TREN 02","15:20","Segundo Turno","GUILLERMO, RIVAS","FASHION OSCURO","346","402214","0","12","16700","2200","08/10/26","22:00"
+"20261008","3","529930","507221","TENIDO TREN 02","22:00","Tercer Turno","ALEXANDER, NOGUERA","FASHION OSCURO","346","402214","0","12","16700","0","09/10/26","02:45"
