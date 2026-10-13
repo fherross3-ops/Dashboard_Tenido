@@ -879,13 +879,7 @@ function parseCSV(text) {
     let lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
     if (lines.length < 2) return [];
 
-    lines = lines.map(l => {
-        const t = l.trim();
-        if (t.length > 1 && t.startsWith('"') && t.endsWith('"') && t.includes(',')) {
-            return t.slice(1, -1).replace(/""/g, '"');
-        }
-        return l;
-    });
+
 
     const delim = detectarSeparador(lines[0]);
 
