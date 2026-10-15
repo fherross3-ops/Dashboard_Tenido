@@ -1,0 +1,5 @@
+﻿"fecha","#","ID","Nº","Maquina","Hora Inicio","Turno","Persona","Estilo","Hilo","Lote","Lote 2","Nº Madeja","Metros a Teñir","Metros Producidos","fecha fin","fecha fin_hora"
+"20261013","1","531537","507221","TENIDO TREN 01","06:01","Primer Turno","ABIEZER, GONZALEZ","AURORA BLACK","346","201217","0","12","16700","0","13/10/26","14:00"
+"20261013","2","531128","507221","TENIDO TREN 02","06:01","Primer Turno","GUILLERMO, RIVAS","INDIGO SOFT","346","402216","0","12","16700","3200","13/10/26","14:00"
+"20261013","3","531129","507221","TENIDO TREN 02","15:20","Segundo Turno","ALEXANDER, NOGUERA","INDIGO SOFT","346","402216","0","12","16700","11100","13/10/26","22:00"
+"20261013","4","531536","507221","TENIDO TREN 02","22:00","Tercer Turno","ABIEZER, GONZALEZ","INDIGO SOFT","346","402216","0","12","16700","1900","14/10/26","02:45"
